@@ -124,8 +124,8 @@ export function CarrierTable({ data, onCall, onBulkCall }: CarrierTableProps) {
   }
 
   return (
-    <Card className="bg-white shadow-sm">
-      <div className="p-4 border-b border-gray-200">
+    <Card className="bg-white shadow-sm flex flex-col h-full">
+      <div className="p-4 border-b border-gray-200 flex-shrink-0">
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold text-gray-900">
             Carrier Database ({sortedData.length} records)
@@ -139,126 +139,128 @@ export function CarrierTable({ data, onCall, onBulkCall }: CarrierTableProps) {
         </div>
       </div>
       
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-max">
-          <thead className="bg-gray-50 border-b border-gray-200">
-            <tr>
-              <th className="px-6 py-3 text-left">
-                <Checkbox
-                  checked={selectedCarriers.length === sortedData.length && sortedData.length > 0}
-                  onCheckedChange={handleSelectAll}
-                />
-              </th>
-              {[
-                { key: 'MC Number', label: 'MC Number' },
-                { key: 'Mailing Address', label: 'Address' },
-                { key: 'State', label: 'State' },
-                { key: 'Phone', label: 'Phone' },
-                { key: 'Drivers', label: 'Drivers' },
-                { key: 'Power Units', label: 'Power Units' },
-                { key: 'MC Age', label: 'MC Age' },
-                { key: 'Email', label: 'Email' },
-                { key: 'Carrier Operation', label: 'Operation' },
-                { key: 'Straight Trucks', label: 'Straight Trucks' },
-                { key: 'Truck Tractors', label: 'Tractors' },
-                { key: 'Trailers', label: 'Trailers' },
-              ].map(({ key, label }) => (
-                <th 
-                  key={key}
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                  onClick={() => handleSort(key as keyof CarrierData)}
-                >
-                  <div className="flex items-center gap-1">
-                    {label}
-                    <SortIcon field={key as keyof CarrierData} />
-                  </div>
-                </th>
-              ))}
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {sortedData.map((carrier, index) => (
-              <tr key={index} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap">
+      <div className="flex-1 overflow-hidden">
+        <div className="h-full overflow-auto">
+          <table className="w-full min-w-max">
+            <thead className="bg-gray-50 border-b border-gray-200 sticky top-0">
+              <tr>
+                <th className="px-6 py-3 text-left">
                   <Checkbox
-                    checked={selectedCarriers.includes(carrier["MC Number"])}
-                    onCheckedChange={(checked) => 
-                      handleSelectCarrier(carrier["MC Number"], checked as boolean)
-                    }
+                    checked={selectedCarriers.length === sortedData.length && sortedData.length > 0}
+                    onCheckedChange={handleSelectAll}
                   />
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <Badge variant="outline" className="font-mono">
-                    {carrier['MC Number']}
-                  </Badge>
-                </td>
-                <td className="px-6 py-4 text-sm text-gray-900 max-w-xs truncate">
-                  {carrier['Mailing Address']}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <Badge variant="secondary">
-                    {carrier['State']}
-                  </Badge>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap font-mono text-sm">
-                  {carrier['Phone']}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {carrier['Drivers']}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {carrier['Power Units']}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {carrier['MC Age']}
-                </td>
-                <td className="px-6 py-4 text-sm text-gray-900 max-w-xs truncate">
-                  {carrier['Email']}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <Badge 
-                    variant={carrier['Carrier Operation'] === 'Interstate' ? 'default' : 'secondary'}
+                </th>
+                {[
+                  { key: 'MC Number', label: 'MC Number' },
+                  { key: 'Mailing Address', label: 'Address' },
+                  { key: 'State', label: 'State' },
+                  { key: 'Phone', label: 'Phone' },
+                  { key: 'Drivers', label: 'Drivers' },
+                  { key: 'Power Units', label: 'Power Units' },
+                  { key: 'MC Age', label: 'MC Age' },
+                  { key: 'Email', label: 'Email' },
+                  { key: 'Carrier Operation', label: 'Operation' },
+                  { key: 'Straight Trucks', label: 'Straight Trucks' },
+                  { key: 'Truck Tractors', label: 'Tractors' },
+                  { key: 'Trailers', label: 'Trailers' },
+                ].map(({ key, label }) => (
+                  <th 
+                    key={key}
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                    onClick={() => handleSort(key as keyof CarrierData)}
                   >
-                    {carrier['Carrier Operation']}
-                  </Badge>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                  {carrier['Straight Trucks']}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                  {carrier['Truck Tractors']}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                  {carrier['Trailers']}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="flex items-center gap-2">
-                    <Button
-                      size="sm"
-                      onClick={() => handleCall(carrier['Phone'], carrier['MC Number'])}
-                      className="bg-green-600 hover:bg-green-700 text-white"
+                    <div className="flex items-center gap-1">
+                      {label}
+                      <SortIcon field={key as keyof CarrierData} />
+                    </div>
+                  </th>
+                ))}
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {sortedData.map((carrier, index) => (
+                <tr key={index} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <Checkbox
+                      checked={selectedCarriers.includes(carrier["MC Number"])}
+                      onCheckedChange={(checked) => 
+                        handleSelectCarrier(carrier["MC Number"], checked as boolean)
+                      }
+                    />
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <Badge variant="outline" className="font-mono">
+                      {carrier['MC Number']}
+                    </Badge>
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-900 max-w-xs truncate">
+                    {carrier['Mailing Address']}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <Badge variant="secondary">
+                      {carrier['State']}
+                    </Badge>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap font-mono text-sm">
+                    {carrier['Phone']}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {carrier['Drivers']}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {carrier['Power Units']}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {carrier['MC Age']}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-900 max-w-xs truncate">
+                    {carrier['Email']}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <Badge 
+                      variant={carrier['Carrier Operation'] === 'Interstate' ? 'default' : 'secondary'}
                     >
-                      <Phone className="w-4 h-4 mr-1" />
-                      Call
-                    </Button>
-                    {carrier['Email'] && (
+                      {carrier['Carrier Operation']}
+                    </Badge>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                    {carrier['Straight Trucks']}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                    {carrier['Truck Tractors']}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                    {carrier['Trailers']}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="flex items-center gap-2">
                       <Button
                         size="sm"
-                        variant="outline"
-                        onClick={() => window.open(`mailto:${carrier['Email']}`)}
+                        onClick={() => handleCall(carrier['Phone'], carrier['MC Number'])}
+                        className="bg-green-600 hover:bg-green-700 text-white"
                       >
-                        <Mail className="w-4 h-4" />
+                        <Phone className="w-4 h-4 mr-1" />
+                        Call
                       </Button>
-                    )}
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                      {carrier['Email'] && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => window.open(`mailto:${carrier['Email']}`)}
+                        >
+                          <Mail className="w-4 h-4" />
+                        </Button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </Card>
   );

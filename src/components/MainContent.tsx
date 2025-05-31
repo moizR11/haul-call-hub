@@ -273,51 +273,61 @@ export function MainContent({ activeSection }: MainContentProps) {
     switch (activeSection) {
       case 'scraping':
         return (
-          <div className="space-y-6">
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">Data Scraping</h2>
-              <p className="text-gray-600 mb-6">
+          <div className="h-full flex flex-col">
+            <div className="flex-shrink-0 mb-6">
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">Data Scraping</h2>
+              <p className="text-gray-600">
                 Enter a range of MC Numbers to scrape carrier data from the FMCSA database.
               </p>
             </div>
-            <ScrapingSection />
+            <div className="flex-1">
+              <ScrapingSection />
+            </div>
           </div>
         );
       
       case 'data':
         return (
-          <div className="space-y-6">
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">Carrier Data Management</h2>
-              <p className="text-gray-600 mb-6">
+          <div className="h-full flex flex-col">
+            <div className="flex-shrink-0 mb-4">
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">Carrier Data Management</h2>
+              <p className="text-gray-600 mb-4">
                 Upload CSV files containing carrier information or view and filter existing data.
               </p>
             </div>
-            <DataSection onDataUpload={handleDataUpload} />
-            <FilterPanel 
-              data={carrierData} 
-              onFilter={setFilteredData} 
-            />
-            <CarrierTable 
-              data={filteredData} 
-              onCall={handleCall}
-            />
+            <div className="flex-shrink-0 mb-4">
+              <DataSection onDataUpload={handleDataUpload} />
+            </div>
+            <div className="flex-shrink-0 mb-4">
+              <FilterPanel 
+                data={carrierData} 
+                onFilter={setFilteredData} 
+              />
+            </div>
+            <div className="flex-1 min-h-0">
+              <CarrierTable 
+                data={filteredData} 
+                onCall={handleCall}
+              />
+            </div>
           </div>
         );
       
       case 'call-logs':
         return (
-          <div className="space-y-6">
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">Call Management</h2>
-              <p className="text-gray-600 mb-6">
+          <div className="h-full flex flex-col">
+            <div className="flex-shrink-0 mb-6">
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">Call Management</h2>
+              <p className="text-gray-600">
                 Track and manage all outbound calls to carriers with recall functionality.
               </p>
             </div>
-            <CallLogsTable 
-              logs={callLogs} 
-              onRecall={handleCall}
-            />
+            <div className="flex-1 min-h-0">
+              <CallLogsTable 
+                logs={callLogs} 
+                onRecall={handleCall}
+              />
+            </div>
           </div>
         );
       
@@ -328,14 +338,14 @@ export function MainContent({ activeSection }: MainContentProps) {
 
   return (
     <SidebarInset>
-      <div className="border-b border-gray-200 bg-white px-6 py-4 flex-shrink-0">
+      <div className="border-b border-gray-200 bg-white px-6 py-3 flex-shrink-0">
         <div className="flex items-center gap-4">
           <SidebarTrigger className="p-2 hover:bg-gray-100 rounded-md" />
-          <h1 className="text-2xl font-bold text-gray-900">Carrier Management Dashboard</h1>
+          <h1 className="text-xl font-bold text-gray-900">Carrier Management Dashboard</h1>
         </div>
       </div>
 
-      <div className="flex-1 p-6 overflow-y-auto">
+      <div className="flex-1 p-6 min-h-0">
         {renderContent()}
       </div>
     </SidebarInset>

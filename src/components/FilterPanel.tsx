@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -100,14 +99,14 @@ export function FilterPanel({ data, onFilter }: FilterPanelProps) {
     filter: NumericFilter; 
     setFilter: (filter: NumericFilter) => void 
   }) => (
-    <div className="space-y-2">
-      <Label className="text-sm font-medium text-gray-700">{label}</Label>
-      <div className="flex gap-2">
+    <div className="space-y-1">
+      <Label className="text-xs font-medium text-gray-700">{label}</Label>
+      <div className="flex gap-1">
         <Select 
           value={filter.operator} 
           onValueChange={(value) => setFilter({ ...filter, operator: value })}
         >
-          <SelectTrigger className="w-20">
+          <SelectTrigger className="w-12 h-8 text-xs">
             <SelectValue />
           </SelectTrigger>
           <SelectContent className="bg-white border border-gray-200 shadow-lg z-50">
@@ -123,28 +122,28 @@ export function FilterPanel({ data, onFilter }: FilterPanelProps) {
           placeholder="Value"
           value={filter.value}
           onChange={(e) => setFilter({ ...filter, value: e.target.value })}
-          className="flex-1"
+          className="flex-1 h-8 text-xs"
         />
       </div>
     </div>
   );
 
   return (
-    <Card className="p-6 bg-white shadow-sm">
-      <div className="flex items-center justify-between mb-6">
+    <Card className="p-4 bg-white shadow-sm">
+      <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-gray-900">Filter Carriers</h3>
-        <Button variant="outline" onClick={clearFilters} className="text-gray-600">
+        <Button variant="outline" onClick={clearFilters} className="text-gray-600 h-8 text-xs">
           Clear All Filters
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-3">
         {/* State Filter */}
-        <div className="space-y-2">
-          <Label className="text-sm font-medium text-gray-700">State</Label>
+        <div className="space-y-1">
+          <Label className="text-xs font-medium text-gray-700">State</Label>
           <Select onValueChange={addState}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select states..." />
+            <SelectTrigger className="h-8 text-xs">
+              <SelectValue placeholder="Select..." />
             </SelectTrigger>
             <SelectContent className="bg-white border border-gray-200 shadow-lg z-50">
               {uniqueStates.map(state => (
@@ -154,12 +153,12 @@ export function FilterPanel({ data, onFilter }: FilterPanelProps) {
               ))}
             </SelectContent>
           </Select>
-          <div className="flex flex-wrap gap-1 mt-2">
+          <div className="flex flex-wrap gap-1 mt-1">
             {selectedStates.map(state => (
-              <Badge key={state} variant="secondary" className="flex items-center gap-1">
+              <Badge key={state} variant="secondary" className="text-xs flex items-center gap-1 px-1 py-0">
                 {state}
                 <X 
-                  className="w-3 h-3 cursor-pointer" 
+                  className="w-2 h-2 cursor-pointer" 
                   onClick={() => removeState(state)}
                 />
               </Badge>
