@@ -1,5 +1,6 @@
+
 import { useState } from "react";
-import { SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarTrigger, SidebarInset } from "@/components/ui/sidebar";
 import { CarrierTable } from "./CarrierTable";
 import { FilterPanel } from "./FilterPanel";
 import { CallLogsTable } from "./CallLogsTable";
@@ -326,7 +327,7 @@ export function MainContent({ activeSection }: MainContentProps) {
   };
 
   return (
-    <main className="flex-1 flex flex-col min-w-0">
+    <SidebarInset>
       <div className="border-b border-gray-200 bg-white px-6 py-4 flex-shrink-0">
         <div className="flex items-center gap-4">
           <SidebarTrigger className="p-2 hover:bg-gray-100 rounded-md" />
@@ -337,6 +338,6 @@ export function MainContent({ activeSection }: MainContentProps) {
       <div className="flex-1 p-6 overflow-y-auto">
         {renderContent()}
       </div>
-    </main>
+    </SidebarInset>
   );
 }
