@@ -24,6 +24,9 @@ export function FilterPanel({ data, onFilter }: FilterPanelProps) {
   const [driversFilter, setDriversFilter] = useState<NumericFilter>({ operator: "=", value: "" });
   const [mcAgeFilter, setMcAgeFilter] = useState<NumericFilter>({ operator: "=", value: "" });
   const [powerUnitsFilter, setPowerUnitsFilter] = useState<NumericFilter>({ operator: "=", value: "" });
+  const [straightTrucksFilter, setStraightTrucksFilter] = useState<NumericFilter>({ operator: "=", value: "" });
+  const [tractorsFilter, setTractorsFilter] = useState<NumericFilter>({ operator: "=", value: "" });
+  const [trailersFilter, setTrailersFilter] = useState<NumericFilter>({ operator: "=", value: "" });
 
   const uniqueStates = [...new Set(data.map(item => item.State).filter(Boolean))].sort();
 
@@ -60,6 +63,9 @@ export function FilterPanel({ data, onFilter }: FilterPanelProps) {
     filtered = applyNumericFilter(filtered, "Drivers", driversFilter);
     filtered = applyNumericFilter(filtered, "MC Age", mcAgeFilter);
     filtered = applyNumericFilter(filtered, "Power Units", powerUnitsFilter);
+    filtered = applyNumericFilter(filtered, "Straight Trucks", straightTrucksFilter);
+    filtered = applyNumericFilter(filtered, "Truck Tractors", tractorsFilter);
+    filtered = applyNumericFilter(filtered, "Trailers", trailersFilter);
 
     onFilter(filtered);
   };
@@ -69,12 +75,15 @@ export function FilterPanel({ data, onFilter }: FilterPanelProps) {
     setDriversFilter({ operator: "=", value: "" });
     setMcAgeFilter({ operator: "=", value: "" });
     setPowerUnitsFilter({ operator: "=", value: "" });
+    setStraightTrucksFilter({ operator: "=", value: "" });
+    setTractorsFilter({ operator: "=", value: "" });
+    setTrailersFilter({ operator: "=", value: "" });
     onFilter(data);
   };
 
   useEffect(() => {
     applyFilters();
-  }, [selectedStates, driversFilter, mcAgeFilter, powerUnitsFilter, data]);
+  }, [selectedStates, driversFilter, mcAgeFilter, powerUnitsFilter, straightTrucksFilter, tractorsFilter, trailersFilter, data]);
 
   const addState = (state: string) => {
     if (!selectedStates.includes(state)) {
@@ -86,6 +95,40 @@ export function FilterPanel({ data, onFilter }: FilterPanelProps) {
     setSelectedStates(selectedStates.filter(s => s !== state));
   };
 
+  const NumericFilterInput = ({ label, filter, setFilter }: { 
+    label: string; 
+    filter: NumericFilter; 
+    setFilter: (filter: NumericFilter) => void 
+  }) => (
+    <div className="space-y-2">
+      <Label className="text-sm font-medium text-gray-700">{label}</Label>
+      <div className="flex gap-2">
+        <Select 
+          value={filter.operator} 
+          onValueChange={(value) => setFilter(prev => ({ ...prev, operator: value }))}
+        >
+          <SelectTrigger className="w-20">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent className="bg-white border border-gray-200 shadow-lg z-50">
+            <SelectItem value="=">=</SelectItem>
+            <SelectItem value="<">&lt;</SelectItem>
+            <SelectItem value=">">&gt;</SelectItem>
+            <SelectItem value="<=">&lt;=</SelectItem>
+            <SelectItem value=">=">&gt;=</SelectItem>
+          </SelectContent>
+        </Select>
+        <Input
+          type="number"
+          placeholder="Value"
+          value={filter.value}
+          onChange={(e) => setFilter(prev => ({ ...prev, value: e.target.value }))}
+          className="flex-1"
+        />
+      </div>
+    </div>
+  );
+
   return (
     <Card className="p-6 bg-white shadow-sm">
       <div className="flex items-center justify-between mb-6">
@@ -95,7 +138,7 @@ export function FilterPanel({ data, onFilter }: FilterPanelProps) {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {/* State Filter */}
         <div className="space-y-2">
           <Label className="text-sm font-medium text-gray-700">State</Label>
@@ -103,7 +146,7 @@ export function FilterPanel({ data, onFilter }: FilterPanelProps) {
             <SelectTrigger>
               <SelectValue placeholder="Select states..." />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-white border border-gray-200 shadow-lg z-50">
               {uniqueStates.map(state => (
                 <SelectItem key={state} value={state}>
                   {state}
@@ -124,92 +167,12 @@ export function FilterPanel({ data, onFilter }: FilterPanelProps) {
           </div>
         </div>
 
-        {/* Drivers Filter */}
-        <div className="space-y-2">
-          <Label className="text-sm font-medium text-gray-700">Drivers</Label>
-          <div className="flex gap-2">
-            <Select 
-              value={driversFilter.operator} 
-              onValueChange={(value) => setDriversFilter(prev => ({ ...prev, operator: value }))}
-            >
-              <SelectTrigger className="w-20">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="=">=</SelectItem>
-                <SelectItem value="<">&lt;</SelectItem>
-                <SelectItem value=">">&gt;</SelectItem>
-                <SelectItem value="<=">&lt;=</SelectItem>
-                <SelectItem value=">=">&gt;=</SelectItem>
-              </SelectContent>
-            </Select>
-            <Input
-              type="number"
-              placeholder="Value"
-              value={driversFilter.value}
-              onChange={(e) => setDriversFilter(prev => ({ ...prev, value: e.target.value }))}
-              className="flex-1"
-            />
-          </div>
-        </div>
-
-        {/* MC Age Filter */}
-        <div className="space-y-2">
-          <Label className="text-sm font-medium text-gray-700">MC Age</Label>
-          <div className="flex gap-2">
-            <Select 
-              value={mcAgeFilter.operator} 
-              onValueChange={(value) => setMcAgeFilter(prev => ({ ...prev, operator: value }))}
-            >
-              <SelectTrigger className="w-20">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="=">=</SelectItem>
-                <SelectItem value="<">&lt;</SelectItem>
-                <SelectItem value=">">&gt;</SelectItem>
-                <SelectItem value="<=">&lt;=</SelectItem>
-                <SelectItem value=">=">&gt;=</SelectItem>
-              </SelectContent>
-            </Select>
-            <Input
-              type="number"
-              placeholder="Value"
-              value={mcAgeFilter.value}
-              onChange={(e) => setMcAgeFilter(prev => ({ ...prev, value: e.target.value }))}
-              className="flex-1"
-            />
-          </div>
-        </div>
-
-        {/* Power Units Filter */}
-        <div className="space-y-2">
-          <Label className="text-sm font-medium text-gray-700">Power Units</Label>
-          <div className="flex gap-2">
-            <Select 
-              value={powerUnitsFilter.operator} 
-              onValueChange={(value) => setPowerUnitsFilter(prev => ({ ...prev, operator: value }))}
-            >
-              <SelectTrigger className="w-20">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="=">=</SelectItem>
-                <SelectItem value="<">&lt;</SelectItem>
-                <SelectItem value=">">&gt;</SelectItem>
-                <SelectItem value="<=">&lt;=</SelectItem>
-                <SelectItem value=">=">&gt;=</SelectItem>
-              </SelectContent>
-            </Select>
-            <Input
-              type="number"
-              placeholder="Value"
-              value={powerUnitsFilter.value}
-              onChange={(e) => setPowerUnitsFilter(prev => ({ ...prev, value: e.target.value }))}
-              className="flex-1"
-            />
-          </div>
-        </div>
+        <NumericFilterInput label="Drivers" filter={driversFilter} setFilter={setDriversFilter} />
+        <NumericFilterInput label="MC Age" filter={mcAgeFilter} setFilter={setMcAgeFilter} />
+        <NumericFilterInput label="Power Units" filter={powerUnitsFilter} setFilter={setPowerUnitsFilter} />
+        <NumericFilterInput label="Straight Trucks" filter={straightTrucksFilter} setFilter={setStraightTrucksFilter} />
+        <NumericFilterInput label="Tractors" filter={tractorsFilter} setFilter={setTractorsFilter} />
+        <NumericFilterInput label="Trailers" filter={trailersFilter} setFilter={setTrailersFilter} />
       </div>
     </Card>
   );

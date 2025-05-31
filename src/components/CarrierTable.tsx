@@ -1,8 +1,8 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Phone, Mail, ArrowUp, ArrowDown } from "lucide-react";
 import { CarrierData } from "./MainContent";
 import { useToast } from "@/hooks/use-toast";
@@ -10,11 +10,13 @@ import { useToast } from "@/hooks/use-toast";
 interface CarrierTableProps {
   data: CarrierData[];
   onCall: (phoneNumber: string, mcNumber: string) => void;
+  onBulkCall?: (selectedCarriers: CarrierData[]) => void;
 }
 
-export function CarrierTable({ data, onCall }: CarrierTableProps) {
+export function CarrierTable({ data, onCall, onBulkCall }: CarrierTableProps) {
   const [sortField, setSortField] = useState<keyof CarrierData | null>(null);
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [selectedCarriers, setSelectedCarriers] = useState<string[]>([]);
   const { toast } = useToast();
 
   const handleSort = (field: keyof CarrierData) => {
@@ -62,6 +64,50 @@ export function CarrierTable({ data, onCall }: CarrierTableProps) {
     });
   };
 
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedCarriers(sortedData.map(carrier => carrier["MC Number"]));
+    } else {
+      setSelectedCarriers([]);
+    }
+  };
+
+  const handleSelectCarrier = (mcNumber: string, checked: boolean) => {
+    if (checked) {
+      setSelectedCarriers([...selectedCarriers, mcNumber]);
+    } else {
+      setSelectedCarriers(selectedCarriers.filter(id => id !== mcNumber));
+    }
+  };
+
+  const handleBulkCall = () => {
+    const carriersToCall = sortedData.filter(carrier => 
+      selectedCarriers.includes(carrier["MC Number"])
+    );
+    
+    if (carriersToCall.length === 0) {
+      toast({
+        title: "Error",
+        description: "No carriers selected",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    carriersToCall.forEach(carrier => {
+      if (carrier.Phone && carrier.Phone.trim() !== '') {
+        onCall(carrier.Phone, carrier["MC Number"]);
+      }
+    });
+
+    toast({
+      title: "Bulk Calls Initiated",
+      description: `Calling ${carriersToCall.length} carriers`,
+    });
+
+    setSelectedCarriers([]);
+  };
+
   const SortIcon = ({ field }: { field: keyof CarrierData }) => {
     if (sortField !== field) return null;
     return sortDirection === 'asc' ? 
@@ -80,15 +126,29 @@ export function CarrierTable({ data, onCall }: CarrierTableProps) {
   return (
     <Card className="bg-white shadow-sm">
       <div className="p-4 border-b border-gray-200">
-        <h3 className="text-lg font-semibold text-gray-900">
-          Carrier Database ({sortedData.length} records)
-        </h3>
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-semibold text-gray-900">
+            Carrier Database ({sortedData.length} records)
+          </h3>
+          {selectedCarriers.length > 0 && (
+            <Button onClick={handleBulkCall} className="bg-green-600 hover:bg-green-700 text-white">
+              <Phone className="w-4 h-4 mr-2" />
+              Call Selected ({selectedCarriers.length})
+            </Button>
+          )}
+        </div>
       </div>
       
       <div className="overflow-x-auto">
-        <table className="w-full">
+        <table className="w-full min-w-max">
           <thead className="bg-gray-50 border-b border-gray-200">
             <tr>
+              <th className="px-6 py-3 text-left">
+                <Checkbox
+                  checked={selectedCarriers.length === sortedData.length && sortedData.length > 0}
+                  onCheckedChange={handleSelectAll}
+                />
+              </th>
               {[
                 { key: 'MC Number', label: 'MC Number' },
                 { key: 'Mailing Address', label: 'Address' },
@@ -122,6 +182,14 @@ export function CarrierTable({ data, onCall }: CarrierTableProps) {
           <tbody className="bg-white divide-y divide-gray-200">
             {sortedData.map((carrier, index) => (
               <tr key={index} className="hover:bg-gray-50">
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <Checkbox
+                    checked={selectedCarriers.includes(carrier["MC Number"])}
+                    onCheckedChange={(checked) => 
+                      handleSelectCarrier(carrier["MC Number"], checked as boolean)
+                    }
+                  />
+                </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <Badge variant="outline" className="font-mono">
                     {carrier['MC Number']}

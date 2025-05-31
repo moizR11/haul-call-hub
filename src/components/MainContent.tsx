@@ -1,9 +1,8 @@
-
 import { useState } from "react";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { CarrierTable } from "./CarrierTable";
 import { FilterPanel } from "./FilterPanel";
-import { CallLogs } from "./CallLogs";
+import { CallLogsTable } from "./CallLogsTable";
 import { ScrapingSection } from "./ScrapingSection";
 import { DataSection } from "./DataSection";
 
@@ -30,7 +29,7 @@ export interface CallLog {
   lastCalled: Date;
 }
 
-// Dummy carrier data
+// Expanded dummy carrier data
 const dummyCarrierData: CarrierData[] = [
   {
     "MC Number": "MC-1614484",
@@ -87,10 +86,94 @@ const dummyCarrierData: CarrierData[] = [
     "Straight Trucks": "0",
     "Truck Tractors": "2",
     "Trailers": "2"
+  },
+  {
+    "MC Number": "MC-1614488",
+    "Mailing Address": "777 INTERSTATE BLVD, ATLANTA, GA 30309",
+    "State": "Georgia",
+    "Phone": "14045551234",
+    "Drivers": "8",
+    "Power Units": "6",
+    "MC Age": "10",
+    "Email": "FREIGHT@EXAMPLE.COM",
+    "Carrier Operation": "Interstate",
+    "Straight Trucks": "3",
+    "Truck Tractors": "3",
+    "Trailers": "6"
+  },
+  {
+    "MC Number": "MC-1614489",
+    "Mailing Address": "456 COMMERCE ST, PHOENIX, AZ 85001",
+    "State": "Arizona",
+    "Phone": "16025551234",
+    "Drivers": "4",
+    "Power Units": "3",
+    "MC Age": "6",
+    "Email": "DESERT@EXAMPLE.COM",
+    "Carrier Operation": "Interstate",
+    "Straight Trucks": "1",
+    "Truck Tractors": "2",
+    "Trailers": "3"
+  },
+  {
+    "MC Number": "MC-1614490",
+    "Mailing Address": "321 TRUCK LANE, NASHVILLE, TN 37201",
+    "State": "Tennessee",
+    "Phone": "16155551234",
+    "Drivers": "6",
+    "Power Units": "5",
+    "MC Age": "8",
+    "Email": "MUSIC@EXAMPLE.COM",
+    "Carrier Operation": "Interstate",
+    "Straight Trucks": "2",
+    "Truck Tractors": "3",
+    "Trailers": "5"
+  },
+  {
+    "MC Number": "MC-1614491",
+    "Mailing Address": "890 CARGO WAY, DENVER, CO 80202",
+    "State": "Colorado",
+    "Phone": "17205551234",
+    "Drivers": "3",
+    "Power Units": "3",
+    "MC Age": "4",
+    "Email": "MOUNTAIN@EXAMPLE.COM",
+    "Carrier Operation": "Interstate",
+    "Straight Trucks": "1",
+    "Truck Tractors": "2",
+    "Trailers": "3"
+  },
+  {
+    "MC Number": "MC-1614492",
+    "Mailing Address": "123 FREIGHT AVE, CHICAGO, IL 60601",
+    "State": "Illinois",
+    "Phone": "13125551234",
+    "Drivers": "12",
+    "Power Units": "10",
+    "MC Age": "15",
+    "Email": "WINDY@EXAMPLE.COM",
+    "Carrier Operation": "Interstate",
+    "Straight Trucks": "4",
+    "Truck Tractors": "6",
+    "Trailers": "10"
+  },
+  {
+    "MC Number": "MC-1614493",
+    "Mailing Address": "567 HAUL ROAD, SEATTLE, WA 98101",
+    "State": "Washington",
+    "Phone": "12065551234",
+    "Drivers": "7",
+    "Power Units": "5",
+    "MC Age": "9",
+    "Email": "PACIFIC@EXAMPLE.COM",
+    "Carrier Operation": "Interstate",
+    "Straight Trucks": "2",
+    "Truck Tractors": "3",
+    "Trailers": "5"
   }
 ];
 
-// Dummy call logs
+// Expanded dummy call logs
 const dummyCallLogs: CallLog[] = [
   {
     id: "1",
@@ -112,6 +195,41 @@ const dummyCallLogs: CallLog[] = [
     carrierName: "MC-1614486",
     callCount: 3,
     lastCalled: new Date("2024-01-16T09:15:00")
+  },
+  {
+    id: "4",
+    phoneNumber: "19165551234",
+    carrierName: "MC-1614487",
+    callCount: 1,
+    lastCalled: new Date("2024-01-13T16:45:00")
+  },
+  {
+    id: "5",
+    phoneNumber: "14045551234",
+    carrierName: "MC-1614488",
+    callCount: 4,
+    lastCalled: new Date("2024-01-17T11:20:00")
+  },
+  {
+    id: "6",
+    phoneNumber: "16025551234",
+    carrierName: "MC-1614489",
+    callCount: 2,
+    lastCalled: new Date("2024-01-12T13:30:00")
+  },
+  {
+    id: "7",
+    phoneNumber: "16155551234",
+    carrierName: "MC-1614490",
+    callCount: 1,
+    lastCalled: new Date("2024-01-18T08:15:00")
+  },
+  {
+    id: "8",
+    phoneNumber: "17205551234",
+    carrierName: "MC-1614491",
+    callCount: 3,
+    lastCalled: new Date("2024-01-11T15:45:00")
   }
 ];
 
@@ -195,7 +313,7 @@ export function MainContent({ activeSection }: MainContentProps) {
                 Track and manage all outbound calls to carriers with recall functionality.
               </p>
             </div>
-            <CallLogs 
+            <CallLogsTable 
               logs={callLogs} 
               onRecall={handleCall}
             />
@@ -208,15 +326,15 @@ export function MainContent({ activeSection }: MainContentProps) {
   };
 
   return (
-    <main className="flex-1 flex flex-col">
-      <div className="border-b border-gray-200 bg-white px-6 py-4">
+    <main className="flex-1 flex flex-col min-w-0">
+      <div className="border-b border-gray-200 bg-white px-6 py-4 flex-shrink-0">
         <div className="flex items-center gap-4">
           <SidebarTrigger className="p-2 hover:bg-gray-100 rounded-md" />
           <h1 className="text-2xl font-bold text-gray-900">Carrier Management Dashboard</h1>
         </div>
       </div>
 
-      <div className="flex-1 p-6">
+      <div className="flex-1 p-6 overflow-y-auto">
         {renderContent()}
       </div>
     </main>
