@@ -105,7 +105,7 @@ export function FilterPanel({ data, onFilter }: FilterPanelProps) {
       <div className="flex gap-2">
         <Select 
           value={filter.operator} 
-          onValueChange={(value) => setFilter(prev => ({ ...prev, operator: value }))}
+          onValueChange={(value) => setFilter({ ...filter, operator: value })}
         >
           <SelectTrigger className="w-20">
             <SelectValue />
@@ -122,7 +122,7 @@ export function FilterPanel({ data, onFilter }: FilterPanelProps) {
           type="number"
           placeholder="Value"
           value={filter.value}
-          onChange={(e) => setFilter(prev => ({ ...prev, value: e.target.value }))}
+          onChange={(e) => setFilter({ ...filter, value: e.target.value })}
           className="flex-1"
         />
       </div>
