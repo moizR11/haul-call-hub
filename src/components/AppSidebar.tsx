@@ -4,15 +4,36 @@ import {
   Sidebar,
   SidebarContent,
   SidebarHeader,
-  SidebarGroup,
-  SidebarGroupLabel,
-  SidebarGroupContent,
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton,
 } from "@/components/ui/sidebar";
-import { Truck, Database, Phone } from "lucide-react";
-import { ScrapingSection } from "./ScrapingSection";
-import { DataSection } from "./DataSection";
+import { Truck, Database, Phone, Wrench } from "lucide-react";
 
-export function AppSidebar() {
+interface AppSidebarProps {
+  onSectionChange: (section: 'scraping' | 'data' | 'call-logs') => void;
+  activeSection: string;
+}
+
+export function AppSidebar({ onSectionChange, activeSection }: AppSidebarProps) {
+  const menuItems = [
+    {
+      id: 'scraping' as const,
+      title: "Scraping",
+      icon: Wrench,
+    },
+    {
+      id: 'data' as const,
+      title: "Data",
+      icon: Database,
+    },
+    {
+      id: 'call-logs' as const,
+      title: "Call Logs",
+      icon: Phone,
+    },
+  ];
+
   return (
     <Sidebar className="w-80 border-r border-gray-200">
       <SidebarHeader className="p-6 border-b border-gray-200">
@@ -27,26 +48,21 @@ export function AppSidebar() {
         </div>
       </SidebarHeader>
       
-      <SidebarContent className="p-6 space-y-8">
-        <SidebarGroup>
-          <SidebarGroupLabel className="flex items-center gap-2 text-gray-700 font-semibold mb-4">
-            <Database className="w-4 h-4" />
-            Scraping Section
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <ScrapingSection />
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        <SidebarGroup>
-          <SidebarGroupLabel className="flex items-center gap-2 text-gray-700 font-semibold mb-4">
-            <Phone className="w-4 h-4" />
-            Data Section
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <DataSection />
-          </SidebarGroupContent>
-        </SidebarGroup>
+      <SidebarContent className="p-4">
+        <SidebarMenu>
+          {menuItems.map((item) => (
+            <SidebarMenuItem key={item.id}>
+              <SidebarMenuButton 
+                isActive={activeSection === item.id}
+                onClick={() => onSectionChange(item.id)}
+                className="w-full justify-start gap-3 p-4 text-left hover:bg-blue-50 data-[active=true]:bg-blue-100 data-[active=true]:text-blue-900"
+              >
+                <item.icon className="w-5 h-5" />
+                <span className="font-medium">{item.title}</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          ))}
+        </SidebarMenu>
       </SidebarContent>
     </Sidebar>
   );
