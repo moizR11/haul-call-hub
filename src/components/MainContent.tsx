@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { SidebarTrigger, SidebarInset } from "@/components/ui/sidebar";
 import { CarrierTable } from "./CarrierTable";
 import { FilterPanel } from "./FilterPanel";
@@ -69,27 +69,31 @@ export function MainContent({ activeSection }: MainContentProps) {
     queryFn: () => fetchData(`${API_BASE_URL}/call_logs`),
   });
 
-  const carrierData = carriersResponse?.data || [];
+  // Use useMemo to prevent re-creating the array on every render
+  const carrierData = useMemo(() => carriersResponse?.data || [], [carriersResponse?.data]);
   
-  const callLogs: CallLog[] = (callLogsResponse?.data || [])
-    .map(log => {
-      let lastCalledDate = new Date(log.lastCalled);
-      if (isNaN(lastCalledDate.getTime())) {
-        console.warn(`Invalid date for call log ID ${log.id}: ${log.lastCalled}. Using epoch.`);
-        lastCalledDate = new Date(0); 
-      }
-      return {
-        ...log,
-        lastCalled: lastCalledDate,
-      };
-    })
-    .sort((a, b) => b.lastCalled.getTime() - a.lastCalled.getTime());
+  const callLogs: CallLog[] = useMemo(() => {
+    return (callLogsResponse?.data || [])
+      .map(log => {
+        let lastCalledDate = new Date(log.lastCalled);
+        if (isNaN(lastCalledDate.getTime())) {
+          console.warn(`Invalid date for call log ID ${log.id}: ${log.lastCalled}. Using epoch.`);
+          lastCalledDate = new Date(0); 
+        }
+        return {
+          ...log,
+          lastCalled: lastCalledDate,
+        };
+      })
+      .sort((a, b) => b.lastCalled.getTime() - a.lastCalled.getTime());
+  }, [callLogsResponse?.data]);
 
+  // Only set filtered data when carrierData actually changes, not on every render
   useEffect(() => {
-    if (carrierData) {
+    if (carrierData.length > 0 && filteredData.length === 0) {
       setFilteredData(carrierData);
     }
-  }, [carrierData]);
+  }, [carrierData.length]); // Only depend on length to avoid infinite loop
   
   useEffect(() => {
     if (carriersError) {
@@ -233,7 +237,7 @@ export function MainContent({ activeSection }: MainContentProps) {
       
       case 'data':
         return (
-          <div className="h-full flex flex-col overflow-hidden">
+          <div className="h-full flex flex-col">
             <div className="flex-shrink-0 mb-3">
               <h2 className="text-xl font-bold text-gray-900 mb-1">Carrier Data Management</h2>
               <p className="text-sm text-gray-600 mb-4">
@@ -249,7 +253,7 @@ export function MainContent({ activeSection }: MainContentProps) {
                 onFilter={setFilteredData} 
               />
             </div>
-            <div className="flex-1 min-h-0 overflow-hidden">
+            <div className="flex-1 min-h-0">
               <CarrierTable 
                 data={filteredData} 
                 allCarriers={carrierData}
@@ -264,19 +268,19 @@ export function MainContent({ activeSection }: MainContentProps) {
       
       case 'call-logs':
         return (
-          <div className="h-full flex flex-col overflow-hidden">
+          <div className="h-full flex flex-col">
             <div className="flex-shrink-0 mb-4">
               <h2 className="text-xl font-bold text-gray-900 mb-1">Call Management</h2>
               <p className="text-sm text-gray-600">
                 Track and manage all outbound calls to carriers with recall functionality.
               </p>
             </div>
-            <div className="flex-1 min-h-0 overflow-hidden">
+            <div className="flex-1 min-h-0">
               <CallLogsTable
                 logs={callLogs} 
-                allCarriers={carrierData} // Pass all carriers to find state for bulk recalls
-                onRecall={handleCall} // onRecall for single items triggers the makeCall -> logCall chain
-                onBulkRecall={handleBulkCall} // Prop for bulk recall actions
+                allCarriers={carrierData}
+                onRecall={handleCall}
+                onBulkRecall={handleBulkCall}
                 isBulkRecalling={bulkMakeCallMutation.isPending}
                 isSingleRecalling={makeCallMutation.isPending}
               />
