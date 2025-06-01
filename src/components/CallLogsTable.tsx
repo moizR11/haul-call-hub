@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -43,7 +44,9 @@ export function CallLogsTable({
     }
   };
 
-  const handleIndividualRecall = (phoneNumber: string, carrierName: string) => {
+  const handleIndividualRecall = (e: React.MouseEvent, phoneNumber: string, carrierName: string) => {
+    e.preventDefault();
+    e.stopPropagation();
     onRecall(phoneNumber, carrierName); 
   };
 
@@ -121,7 +124,7 @@ export function CallLogsTable({
           <table className="w-full">
             <thead className="bg-gray-50 border-b border-gray-200 sticky top-0 z-10">
               <tr>
-                <th className="px-6 py-3 text-left sticky left-0 bg-gray-50 z-20">
+                <th className="px-6 py-3 text-left bg-gray-50">
                   <Checkbox
                     checked={selectedLogIds.length === logs.length && logs.length > 0}
                     onCheckedChange={handleSelectAll}
@@ -132,13 +135,13 @@ export function CallLogsTable({
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Carrier (MC#)</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Calls</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Called</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky right-0 bg-gray-50 z-20">Actions</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">Actions</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {logs.map((log) => (
                 <tr key={log.id} className="hover:bg-gray-50 group">
-                  <td className="px-6 py-4 whitespace-nowrap sticky left-0 bg-white group-hover:bg-gray-50 z-10">
+                  <td className="px-6 py-4 whitespace-nowrap bg-white group-hover:bg-gray-50">
                     <Checkbox
                       checked={selectedLogIds.includes(log.id)}
                       onCheckedChange={(checked) => handleSelectLog(log.id, checked as boolean)}
@@ -154,10 +157,13 @@ export function CallLogsTable({
                   <td className="px-4 py-4 whitespace-nowrap text-xs text-gray-700">
                      <div className="flex items-center gap-2"><Clock className="w-3 h-3 text-gray-400" />{formatTime(log.lastCalled)}</div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap sticky right-0 bg-white group-hover:bg-gray-50 z-10">
-                    <Button size="sm" onClick={() => handleIndividualRecall(log.phoneNumber, log.carrierName)}
+                  <td className="px-6 py-4 whitespace-nowrap bg-white group-hover:bg-gray-50">
+                    <Button 
+                      size="sm" 
+                      onClick={(e) => handleIndividualRecall(e, log.phoneNumber, log.carrierName)}
                       className="bg-blue-500 hover:bg-blue-600 text-white text-xs px-2 py-1"
-                      disabled={isSingleRecalling}>
+                      disabled={isSingleRecalling}
+                    >
                       <Phone className="w-3 h-3 mr-1" /> {isSingleRecalling ? 'Recalling...' : 'Recall'}
                     </Button>
                   </td>

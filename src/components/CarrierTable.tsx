@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -50,7 +51,9 @@ export function CarrierTable({
     return sortDirection === 'asc' ? String(aVal).localeCompare(String(bVal)) : String(bVal).localeCompare(String(aVal));
   });
 
-  const handleIndividualCall = (phoneNumber: string, mcNumber: string) => {
+  const handleIndividualCall = (e: React.MouseEvent, phoneNumber: string, mcNumber: string) => {
+    e.preventDefault();
+    e.stopPropagation();
     if (!phoneNumber || String(phoneNumber).trim() === '' || String(phoneNumber) === '0') {
       toast({
         title: "Validation Error", description: "No valid phone number for this carrier.", variant: "destructive",
@@ -147,7 +150,7 @@ export function CarrierTable({
         <table className="w-full min-w-max text-xs">
           <thead className="bg-gray-50 border-b border-gray-200 sticky top-0 z-10">
             <tr>
-              <th className="px-3 py-2 text-left sticky left-0 bg-gray-50 z-20">
+              <th className="px-3 py-2 text-left bg-gray-50">
                 <Checkbox
                   checked={selectedCarriersMC.length === sortedDisplayData.length && sortedDisplayData.length > 0}
                   onCheckedChange={handleSelectAll}
@@ -167,7 +170,7 @@ export function CarrierTable({
                   <div className="flex items-center">{label}<SortIcon field={key as keyof CarrierData} /></div>
                 </th>
               ))}
-              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky right-0 bg-gray-50 z-20">
+              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
                 Actions
               </th>
             </tr>
@@ -175,7 +178,7 @@ export function CarrierTable({
           <tbody className="bg-white divide-y divide-gray-200">
             {sortedDisplayData.map((carrier) => (
               <tr key={carrier["MC Number"]} className="hover:bg-gray-50 group">
-                <td className="px-3 py-2 whitespace-nowrap sticky left-0 bg-white group-hover:bg-gray-50 z-10">
+                <td className="px-3 py-2 whitespace-nowrap bg-white group-hover:bg-gray-50">
                    <Checkbox
                     checked={selectedCarriersMC.includes(carrier["MC Number"])}
                     onCheckedChange={(checked) => handleSelectCarrier(carrier["MC Number"], checked as boolean)}
@@ -193,11 +196,14 @@ export function CarrierTable({
                 <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-700 text-center">{carrier['Straight Trucks']}</td>
                 <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-700 text-center">{carrier['Truck Tractors']}</td>
                 <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-700 text-center">{carrier['Trailers']}</td>
-                <td className="px-3 py-2 whitespace-nowrap sticky right-0 bg-white group-hover:bg-gray-50 z-10">
+                <td className="px-3 py-2 whitespace-nowrap bg-white group-hover:bg-gray-50">
                   <div className="flex items-center gap-1">
-                    <Button size="sm" onClick={() => handleIndividualCall(String(carrier['Phone']), carrier['MC Number'])}
+                    <Button 
+                      size="sm" 
+                      onClick={(e) => handleIndividualCall(e, String(carrier['Phone']), carrier['MC Number'])}
                       className="bg-green-500 hover:bg-green-600 text-white text-xs px-2 py-1 h-6"
-                      disabled={!carrier['Phone'] || String(carrier['Phone']).trim() === '' || String(carrier['Phone']) === '0' || isSingleCalling}>
+                      disabled={!carrier['Phone'] || String(carrier['Phone']).trim() === '' || String(carrier['Phone']) === '0' || isSingleCalling}
+                    >
                       <Phone className="w-3 h-3 mr-1" /> {isSingleCalling ? 'Calling...' : 'Call'}
                     </Button>
                     {carrier['Email'] && String(carrier['Email']).trim() !== '' && (
