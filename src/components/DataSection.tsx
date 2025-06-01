@@ -1,4 +1,3 @@
-
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -6,11 +5,13 @@ import { Label } from "@/components/ui/label";
 import { Upload } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
+const API_BASE_URL = "http://127.0.0.1:5000//api";
+
 interface DataSectionProps {
-  onDataUpload?: (data: any[]) => void;
+  onUploadSuccess: () => void;
 }
 
-export function DataSection({ onDataUpload }: DataSectionProps) {
+export function DataSection({ onUploadSuccess }: DataSectionProps) {
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
@@ -25,41 +26,43 @@ export function DataSection({ onDataUpload }: DataSectionProps) {
         description: "Please upload a CSV file",
         variant: "destructive",
       });
+      // Reset file input
+      if(fileInputRef.current) fileInputRef.current.value = "";
       return;
     }
 
     setIsUploading(true);
+    const formData = new FormData();
+    formData.append("file", file);
 
     try {
-      const text = await file.text();
-      const lines = text.split('\n');
-      const headers = lines[0].split(',');
-      
-      const data = lines.slice(1)
-        .filter(line => line.trim())
-        .map(line => {
-          const values = line.split(',');
-          const row: any = {};
-          headers.forEach((header, index) => {
-            row[header.trim()] = values[index]?.trim() || '';
-          });
-          return row;
-        });
+      const response = await fetch(`${API_BASE_URL}/upload_csv`, {
+        method: "POST",
+        body: formData,
+      });
 
-      onDataUpload?.(data);
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || "Failed to upload CSV");
+      }
       
+      onUploadSuccess(); // Trigger refetch in parent
       toast({
         title: "Success",
-        description: `Uploaded ${data.length} carrier records`,
+        description: result.message || `Uploaded ${file.name} successfully.`,
       });
-    } catch (error) {
+
+    } catch (error: any) {
       toast({
-        title: "Error",
-        description: "Failed to parse CSV file",
+        title: "Upload Error",
+        description: error.message || "Failed to upload CSV file",
         variant: "destructive",
       });
     } finally {
       setIsUploading(false);
+      // Reset file input
+      if(fileInputRef.current) fileInputRef.current.value = "";
     }
   };
 
@@ -67,7 +70,7 @@ export function DataSection({ onDataUpload }: DataSectionProps) {
     <Card className="p-4 space-y-4 bg-white shadow-sm">
       <div className="space-y-2">
         <Label className="text-sm font-medium text-gray-700">
-          Upload CSV File
+          Upload Carrier CSV File
         </Label>
         <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-400 transition-colors">
           <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
