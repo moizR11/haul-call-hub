@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -6,11 +5,13 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Phone, Mail, ArrowUp, ArrowDown } from "lucide-react";
 import { CarrierData } from "./MainContent"; 
+import { CallLog } from "./MainContent";
 import { useToast } from "@/hooks/use-toast";
 
 interface CarrierTableProps {
   data: CarrierData[]; 
   allCarriers: CarrierData[]; 
+  callLogs: CallLog[];
   onCall: (phoneNumber: string, mcNumber: string) => void;
   onBulkCall: (itemsToCall: Array<{ phoneNumber: string, mcNumber: string, state: string }>) => void; 
   isBulkCalling?: boolean; 
@@ -20,6 +21,7 @@ interface CarrierTableProps {
 export function CarrierTable({ 
   data: filteredDisplayData, 
   allCarriers,
+  callLogs,
   onCall, 
   onBulkCall,
   isBulkCalling,
@@ -29,6 +31,9 @@ export function CarrierTable({
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [selectedCarriersMC, setSelectedCarriersMC] = useState<string[]>([]);
   const { toast } = useToast();
+
+  // Create a Set of MC Numbers that have been called for quick lookup
+  const calledMCNumbers = new Set(callLogs.map(log => log.carrierName));
 
   const handleSort = (field: keyof CarrierData) => {
     if (sortField === field) {
@@ -109,6 +114,11 @@ export function CarrierTable({
     return sortDirection === 'asc' ? <ArrowUp className="w-4 h-4 ml-1" /> : <ArrowDown className="w-4 h-4 ml-1" />;
   };
 
+  // Check if a carrier has already been called
+  const hasBeenCalled = (mcNumber: string) => {
+    return calledMCNumbers.has(mcNumber);
+  };
+
   if (filteredDisplayData.length === 0 && allCarriers.length > 0) {
      return (
       <Card className="p-8 text-center bg-white">
@@ -176,45 +186,56 @@ export function CarrierTable({
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {sortedDisplayData.map((carrier) => (
-              <tr key={carrier["MC Number"]} className="hover:bg-gray-50 group">
-                <td className="px-3 py-2 whitespace-nowrap bg-white group-hover:bg-gray-50">
-                   <Checkbox
-                    checked={selectedCarriersMC.includes(carrier["MC Number"])}
-                    onCheckedChange={(checked) => handleSelectCarrier(carrier["MC Number"], checked as boolean)}
-                  />
-                </td>
-                <td className="px-2 py-2 whitespace-nowrap"><Badge variant="outline" className="font-mono text-xs">{carrier['MC Number']}</Badge></td>
-                <td className="px-2 py-2 text-xs text-gray-700 max-w-xs truncate" title={carrier['Mailing Address']}>{carrier['Mailing Address']}</td>
-                <td className="px-2 py-2 whitespace-nowrap"><Badge variant="secondary" className="text-xs">{carrier['State']}</Badge></td>
-                <td className="px-2 py-2 whitespace-nowrap font-mono text-xs">{String(carrier['Phone'])}</td>
-                <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-700 text-center">{carrier['Drivers']}</td>
-                <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-700 text-center">{carrier['Power Units']}</td>
-                <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-700 text-center">{carrier['MC Age']}</td>
-                <td className="px-2 py-2 text-xs text-gray-700 max-w-[120px] truncate" title={carrier['Email']}>{carrier['Email']}</td>
-                <td className="px-2 py-2 whitespace-nowrap"><Badge className="text-xs" variant={carrier['Carrier Operation'] === 'Interstate' ? 'default' : 'secondary'}>{carrier['Carrier Operation']}</Badge></td>
-                <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-700 text-center">{carrier['Straight Trucks']}</td>
-                <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-700 text-center">{carrier['Truck Tractors']}</td>
-                <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-700 text-center">{carrier['Trailers']}</td>
-                <td className="px-3 py-2 whitespace-nowrap bg-white group-hover:bg-gray-50">
-                  <div className="flex items-center gap-1">
-                    <Button 
-                      size="sm" 
-                      onClick={(e) => handleIndividualCall(e, String(carrier['Phone']), carrier['MC Number'])}
-                      className="bg-green-500 hover:bg-green-600 text-white text-xs px-2 py-1 h-6"
-                      disabled={!carrier['Phone'] || String(carrier['Phone']).trim() === '' || String(carrier['Phone']) === '0' || isSingleCalling}
-                    >
-                      <Phone className="w-3 h-3 mr-1" /> {isSingleCalling ? 'Calling...' : 'Call'}
-                    </Button>
-                    {carrier['Email'] && String(carrier['Email']).trim() !== '' && (
-                      <Button size="sm" variant="outline" onClick={() => window.open(`mailto:${carrier['Email']}`)} className="text-xs px-2 py-1 h-6">
-                        <Mail className="w-3 h-3" />
+            {sortedDisplayData.map((carrier) => {
+              const isAlreadyCalled = hasBeenCalled(carrier["MC Number"]);
+              const isCallButtonDisabled = !carrier['Phone'] || 
+                String(carrier['Phone']).trim() === '' || 
+                String(carrier['Phone']) === '0' || 
+                isSingleCalling || 
+                isAlreadyCalled;
+
+              return (
+                <tr key={carrier["MC Number"]} className="hover:bg-gray-50 group">
+                  <td className="px-3 py-2 whitespace-nowrap bg-white group-hover:bg-gray-50">
+                    <Checkbox
+                      checked={selectedCarriersMC.includes(carrier["MC Number"])}
+                      onCheckedChange={(checked) => handleSelectCarrier(carrier["MC Number"], checked as boolean)}
+                    />
+                  </td>
+                  <td className="px-2 py-2 whitespace-nowrap"><Badge variant="outline" className="font-mono text-xs">{carrier['MC Number']}</Badge></td>
+                  <td className="px-2 py-2 text-xs text-gray-700 max-w-xs truncate" title={carrier['Mailing Address']}>{carrier['Mailing Address']}</td>
+                  <td className="px-2 py-2 whitespace-nowrap"><Badge variant="secondary" className="text-xs">{carrier['State']}</Badge></td>
+                  <td className="px-2 py-2 whitespace-nowrap font-mono text-xs">{String(carrier['Phone'])}</td>
+                  <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-700 text-center">{carrier['Drivers']}</td>
+                  <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-700 text-center">{carrier['Power Units']}</td>
+                  <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-700 text-center">{carrier['MC Age']}</td>
+                  <td className="px-2 py-2 text-xs text-gray-700 max-w-[120px] truncate" title={carrier['Email']}>{carrier['Email']}</td>
+                  <td className="px-2 py-2 whitespace-nowrap"><Badge className="text-xs" variant={carrier['Carrier Operation'] === 'Interstate' ? 'default' : 'secondary'}>{carrier['Carrier Operation']}</Badge></td>
+                  <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-700 text-center">{carrier['Straight Trucks']}</td>
+                  <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-700 text-center">{carrier['Truck Tractors']}</td>
+                  <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-700 text-center">{carrier['Trailers']}</td>
+                  <td className="px-3 py-2 whitespace-nowrap bg-white group-hover:bg-gray-50">
+                    <div className="flex items-center gap-1">
+                      <Button 
+                        size="sm" 
+                        onClick={(e) => handleIndividualCall(e, String(carrier['Phone']), carrier['MC Number'])}
+                        className="bg-green-500 hover:bg-green-600 text-white text-xs px-2 py-1 h-6 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                        disabled={isCallButtonDisabled}
+                        title={isAlreadyCalled ? "Carrier has already been called" : ""}
+                      >
+                        <Phone className="w-3 h-3 mr-1" /> 
+                        {isSingleCalling ? 'Calling...' : isAlreadyCalled ? 'Called' : 'Call'}
                       </Button>
-                    )}
-                  </div>
-                </td>
-              </tr>
-            ))}
+                      {carrier['Email'] && String(carrier['Email']).trim() !== '' && (
+                        <Button size="sm" variant="outline" onClick={() => window.open(`mailto:${carrier['Email']}`)} className="text-xs px-2 py-1 h-6">
+                          <Mail className="w-3 h-3" />
+                        </Button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>

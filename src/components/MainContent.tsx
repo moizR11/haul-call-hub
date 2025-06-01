@@ -257,6 +257,7 @@ export function MainContent({ activeSection }: MainContentProps) {
               <CarrierTable 
                 data={filteredData} 
                 allCarriers={carrierData}
+                callLogs={callLogs}
                 onCall={handleCall}
                 onBulkCall={handleBulkCall}
                 isBulkCalling={bulkMakeCallMutation.isPending}
