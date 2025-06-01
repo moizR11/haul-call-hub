@@ -1,51 +1,18 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-
-const API_BASE_URL = "http://127.0.0.1:5000/api";
 
 export function ScrapingSection() {
   const [startMC, setStartMC] = useState("");
   const [endMC, setEndMC] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const queryClient = useQueryClient();
 
-  const scrapeMutation = useMutation({
-    mutationFn: async ({ start, end }: { start: string, end: string }) => {
-      const response = await fetch(`${API_BASE_URL}/scrape`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ start_mc: start, end_mc: end }),
-      });
-      const result = await response.json();
-      if (!response.ok) {
-        throw new Error(result.message || "Scraping request failed");
-      }
-      return result;
-    },
-    onSuccess: (data) => {
-      toast({
-        title: "Scraping Initiated",
-        description: data.message || `Scraping MC numbers from ${startMC} to ${endMC}. This may take some time.`,
-      });
-      // Optionally, you could refetch carriers after a delay or provide a manual refresh button
-      // For now, we just inform the user. If scraping is quick and updates `carriers_data_store` immediately:
-      // queryClient.invalidateQueries({ queryKey: ['carriers'] });
-    },
-    onError: (error: Error) => {
-      toast({
-        title: "Scraping Error",
-        description: error.message,
-        variant: "destructive",
-      });
-    },
-  });
-
-  const handleScrapeData = () => {
+  const handleScrapeData = async () => {
     if (!startMC || !endMC) {
       toast({
         title: "Error",
@@ -58,12 +25,22 @@ export function ScrapingSection() {
     if (parseInt(startMC) > parseInt(endMC)) {
       toast({
         title: "Error",
-        description: "Starting MC number must be less than or equal to ending MC number",
+        description: "Starting MC number must be less than ending MC number",
         variant: "destructive",
       });
       return;
     }
-    scrapeMutation.mutate({ start: startMC, end: endMC });
+
+    setIsLoading(true);
+    
+    // Simulate API call
+    setTimeout(() => {
+      setIsLoading(false);
+      toast({
+        title: "Scraping Initiated",
+        description: `Scraping MC numbers from ${startMC} to ${endMC}`,
+      });
+    }, 2000);
   };
 
   return (
@@ -79,7 +56,6 @@ export function ScrapingSection() {
           value={startMC}
           onChange={(e) => setStartMC(e.target.value)}
           className="w-full"
-          disabled={scrapeMutation.isPending}
         />
       </div>
       
@@ -94,16 +70,15 @@ export function ScrapingSection() {
           value={endMC}
           onChange={(e) => setEndMC(e.target.value)}
           className="w-full"
-          disabled={scrapeMutation.isPending}
         />
       </div>
       
       <Button 
         onClick={handleScrapeData}
-        disabled={scrapeMutation.isPending}
+        disabled={isLoading}
         className="w-full bg-blue-600 hover:bg-blue-700"
       >
-        {scrapeMutation.isPending ? "Scraping..." : "Scrape Data"}
+        {isLoading ? "Scraping..." : "Scrape Data"}
       </Button>
     </Card>
   );

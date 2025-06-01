@@ -1,14 +1,11 @@
-import { useState, useEffect } from "react";
+
+import { useState } from "react";
 import { SidebarTrigger, SidebarInset } from "@/components/ui/sidebar";
 import { CarrierTable } from "./CarrierTable";
 import { FilterPanel } from "./FilterPanel";
 import { CallLogsTable } from "./CallLogsTable";
 import { ScrapingSection } from "./ScrapingSection";
 import { DataSection } from "./DataSection";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useToast } from "@/hooks/use-toast";
-
-const API_BASE_URL = "http://127.0.0.1:5000/api";
 
 export interface CarrierData {
   "MC Number": string;
@@ -28,201 +25,251 @@ export interface CarrierData {
 export interface CallLog {
   id: string;
   phoneNumber: string;
-  carrierName: string; // This is MC Number
+  carrierName: string;
   callCount: number;
   lastCalled: Date;
 }
 
-// For bulk call API
-export interface BulkCallRequestItem {
-  phone_number: string;
-  mc_number: string;
-  state: string;
-}
+// Expanded dummy carrier data
+const dummyCarrierData: CarrierData[] = [
+  {
+    "MC Number": "MC-1614484",
+    "Mailing Address": "6664 RIDGWAY DRIVE, PITTSBURGH, PA 15237",
+    "State": "Pennsylvania",
+    "Phone": "14122544675",
+    "Drivers": "1",
+    "Power Units": "1",
+    "MC Age": "5",
+    "Email": "TRUCKDRIVER0520@GMAIL.COM",
+    "Carrier Operation": "Interstate",
+    "Straight Trucks": "0",
+    "Truck Tractors": "1",
+    "Trailers": "1"
+  },
+  {
+    "MC Number": "MC-1614485",
+    "Mailing Address": "1234 MAIN STREET, DALLAS, TX 75201",
+    "State": "Texas",
+    "Phone": "14695551234",
+    "Drivers": "3",
+    "Power Units": "2",
+    "MC Age": "3",
+    "Email": "CARRIER@EXAMPLE.COM",
+    "Carrier Operation": "Interstate",
+    "Straight Trucks": "1",
+    "Truck Tractors": "1",
+    "Trailers": "2"
+  },
+  {
+    "MC Number": "MC-1614486",
+    "Mailing Address": "5678 OAK AVENUE, MIAMI, FL 33101",
+    "State": "Florida",
+    "Phone": "13055551234",
+    "Drivers": "5",
+    "Power Units": "4",
+    "MC Age": "7",
+    "Email": "TRANSPORT@EXAMPLE.COM",
+    "Carrier Operation": "Interstate",
+    "Straight Trucks": "2",
+    "Truck Tractors": "2",
+    "Trailers": "4"
+  },
+  {
+    "MC Number": "MC-1614487",
+    "Mailing Address": "9999 HIGHWAY 101, SACRAMENTO, CA 95814",
+    "State": "California",
+    "Phone": "19165551234",
+    "Drivers": "2",
+    "Power Units": "2",
+    "MC Age": "2",
+    "Email": "LOGISTICS@EXAMPLE.COM",
+    "Carrier Operation": "Interstate",
+    "Straight Trucks": "0",
+    "Truck Tractors": "2",
+    "Trailers": "2"
+  },
+  {
+    "MC Number": "MC-1614488",
+    "Mailing Address": "777 INTERSTATE BLVD, ATLANTA, GA 30309",
+    "State": "Georgia",
+    "Phone": "14045551234",
+    "Drivers": "8",
+    "Power Units": "6",
+    "MC Age": "10",
+    "Email": "FREIGHT@EXAMPLE.COM",
+    "Carrier Operation": "Interstate",
+    "Straight Trucks": "3",
+    "Truck Tractors": "3",
+    "Trailers": "6"
+  },
+  {
+    "MC Number": "MC-1614489",
+    "Mailing Address": "456 COMMERCE ST, PHOENIX, AZ 85001",
+    "State": "Arizona",
+    "Phone": "16025551234",
+    "Drivers": "4",
+    "Power Units": "3",
+    "MC Age": "6",
+    "Email": "DESERT@EXAMPLE.COM",
+    "Carrier Operation": "Interstate",
+    "Straight Trucks": "1",
+    "Truck Tractors": "2",
+    "Trailers": "3"
+  },
+  {
+    "MC Number": "MC-1614490",
+    "Mailing Address": "321 TRUCK LANE, NASHVILLE, TN 37201",
+    "State": "Tennessee",
+    "Phone": "16155551234",
+    "Drivers": "6",
+    "Power Units": "5",
+    "MC Age": "8",
+    "Email": "MUSIC@EXAMPLE.COM",
+    "Carrier Operation": "Interstate",
+    "Straight Trucks": "2",
+    "Truck Tractors": "3",
+    "Trailers": "5"
+  },
+  {
+    "MC Number": "MC-1614491",
+    "Mailing Address": "890 CARGO WAY, DENVER, CO 80202",
+    "State": "Colorado",
+    "Phone": "17205551234",
+    "Drivers": "3",
+    "Power Units": "3",
+    "MC Age": "4",
+    "Email": "MOUNTAIN@EXAMPLE.COM",
+    "Carrier Operation": "Interstate",
+    "Straight Trucks": "1",
+    "Truck Tractors": "2",
+    "Trailers": "3"
+  },
+  {
+    "MC Number": "MC-1614492",
+    "Mailing Address": "123 FREIGHT AVE, CHICAGO, IL 60601",
+    "State": "Illinois",
+    "Phone": "13125551234",
+    "Drivers": "12",
+    "Power Units": "10",
+    "MC Age": "15",
+    "Email": "WINDY@EXAMPLE.COM",
+    "Carrier Operation": "Interstate",
+    "Straight Trucks": "4",
+    "Truck Tractors": "6",
+    "Trailers": "10"
+  },
+  {
+    "MC Number": "MC-1614493",
+    "Mailing Address": "567 HAUL ROAD, SEATTLE, WA 98101",
+    "State": "Washington",
+    "Phone": "12065551234",
+    "Drivers": "7",
+    "Power Units": "5",
+    "MC Age": "9",
+    "Email": "PACIFIC@EXAMPLE.COM",
+    "Carrier Operation": "Interstate",
+    "Straight Trucks": "2",
+    "Truck Tractors": "3",
+    "Trailers": "5"
+  }
+];
+
+// Expanded dummy call logs
+const dummyCallLogs: CallLog[] = [
+  {
+    id: "1",
+    phoneNumber: "14122544675",
+    carrierName: "MC-1614484",
+    callCount: 2,
+    lastCalled: new Date("2024-01-15T10:30:00")
+  },
+  {
+    id: "2",
+    phoneNumber: "14695551234",
+    carrierName: "MC-1614485",
+    callCount: 1,
+    lastCalled: new Date("2024-01-14T14:20:00")
+  },
+  {
+    id: "3",
+    phoneNumber: "13055551234",
+    carrierName: "MC-1614486",
+    callCount: 3,
+    lastCalled: new Date("2024-01-16T09:15:00")
+  },
+  {
+    id: "4",
+    phoneNumber: "19165551234",
+    carrierName: "MC-1614487",
+    callCount: 1,
+    lastCalled: new Date("2024-01-13T16:45:00")
+  },
+  {
+    id: "5",
+    phoneNumber: "14045551234",
+    carrierName: "MC-1614488",
+    callCount: 4,
+    lastCalled: new Date("2024-01-17T11:20:00")
+  },
+  {
+    id: "6",
+    phoneNumber: "16025551234",
+    carrierName: "MC-1614489",
+    callCount: 2,
+    lastCalled: new Date("2024-01-12T13:30:00")
+  },
+  {
+    id: "7",
+    phoneNumber: "16155551234",
+    carrierName: "MC-1614490",
+    callCount: 1,
+    lastCalled: new Date("2024-01-18T08:15:00")
+  },
+  {
+    id: "8",
+    phoneNumber: "17205551234",
+    carrierName: "MC-1614491",
+    callCount: 3,
+    lastCalled: new Date("2024-01-11T15:45:00")
+  }
+];
 
 interface MainContentProps {
   activeSection: string;
 }
 
-const fetchData = async (url: string) => {
-  const response = await fetch(url);
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({ message: "Network response was not ok" }));
-    throw new Error(errorData.message || `Error fetching ${url}`);
-  }
-  return response.json();
-};
-
-
 export function MainContent({ activeSection }: MainContentProps) {
-  const queryClient = useQueryClient();
-  const { toast } = useToast();
+  const [carrierData, setCarrierData] = useState<CarrierData[]>(dummyCarrierData);
+  const [filteredData, setFilteredData] = useState<CarrierData[]>(dummyCarrierData);
+  const [callLogs, setCallLogs] = useState<CallLog[]>(dummyCallLogs);
 
-  const [filteredData, setFilteredData] = useState<CarrierData[]>([]);
-
-  const { data: carriersResponse, isLoading: isLoadingCarriers, error: carriersError } = useQuery<{ data: CarrierData[] }>({
-    queryKey: ['carriers'],
-    queryFn: () => fetchData(`${API_BASE_URL}/carriers`),
-  });
-
-  const { data: callLogsResponse, isLoading: isLoadingCallLogs, error: callLogsError } = useQuery<{ data: any[] }>({
-    queryKey: ['callLogs'],
-    queryFn: () => fetchData(`${API_BASE_URL}/call_logs`),
-  });
-
-  const carrierData = carriersResponse?.data || [];
-  
-  const callLogs: CallLog[] = (callLogsResponse?.data || [])
-    .map(log => {
-      let lastCalledDate = new Date(log.lastCalled);
-      if (isNaN(lastCalledDate.getTime())) {
-        console.warn(`Invalid date for call log ID ${log.id}: ${log.lastCalled}. Using epoch.`);
-        lastCalledDate = new Date(0); 
-      }
-      return {
-        ...log,
-        lastCalled: lastCalledDate,
-      };
-    })
-    .sort((a, b) => b.lastCalled.getTime() - a.lastCalled.getTime());
-
-
-  useEffect(() => {
-    if (carrierData) {
-      setFilteredData(carrierData);
-    }
-  }, [carrierData]);
-  
-  useEffect(() => {
-    if (carriersError) {
-      toast({ title: "Error fetching carriers", description: carriersError.message, variant: "destructive" });
-    }
-    if (callLogsError) {
-      toast({ title: "Error fetching call logs", description: callLogsError.message, variant: "destructive" });
-    }
-  }, [carriersError, callLogsError, toast]);
-
-  const logCallMutation = useMutation({
-    mutationFn: async ({ phoneNumber, mcNumber }: { phoneNumber: string, mcNumber: string }) => {
-      const response = await fetch(`${API_BASE_URL}/log_call`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone_number: phoneNumber, mc_number: mcNumber }),
-      });
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ message: "Failed to log call" }));
-        throw new Error(errorData.message || "Failed to log call");
-      }
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['callLogs'] });
-    },
-    onError: (error: Error) => {
-      toast({ title: "Error Logging Call", description: error.message, variant: "destructive" });
-    },
-  });
-
-  const makeCallMutation = useMutation({
-    mutationFn: async ({ phoneNumber, mcNumber, state }: { phoneNumber: string, mcNumber: string, state: string }) => {
-      const response = await fetch(`${API_BASE_URL}/make_call`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone_number: phoneNumber, mc_number: mcNumber, state: state }),
-      });
-      const result = await response.json();
-      if (!response.ok) {
-        throw new Error(result.message || "Failed to initiate call");
-      }
-      return { ...result, phoneNumber, mcNumber }; 
-    },
-    onSuccess: (data) => {
-      toast({ 
-        title: `Call to ${data.phoneNumber} Initiated`, 
-        description: (
-          <div>
-            <p>{data.message}</p>
-            {data.hook && <p className="mt-1 text-xs"><strong>Hook:</strong> {data.hook}</p>}
-            {data.voicemail && <p className="text-xs"><strong>Voicemail:</strong> {data.voicemail}</p>}
-          </div>
-        ),
-        duration: 7000,
-      });
-      logCallMutation.mutate({ phoneNumber: data.phoneNumber, mcNumber: data.mcNumber });
-    },
-    onError: (error: Error) => {
-      toast({ title: "Error Making Call", description: error.message, variant: "destructive" });
-    },
-  });
-
-  const bulkMakeCallMutation = useMutation({
-    mutationFn: async (callRequests: BulkCallRequestItem[]) => {
-      const response = await fetch(`${API_BASE_URL}/bulk_make_call`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(callRequests),
-      });
-      const result = await response.json();
-      // Check for non-200 status, but allow if backend signals partial success with a 200
-      if (!response.ok && result.status !== "partial_success") { 
-        throw new Error(result.message || "Bulk call request failed at network level");
-      }
-      return result;
-    },
-    onSuccess: (data) => {
-      const successCount = data.results.filter((r: any) => r.status === 'success').length;
-      const errorCount = data.results.filter((r: any) => r.status === 'error').length;
-
-      toast({
-        title: "Bulk Call Processed",
-        description: `${successCount} calls initiated successfully. ${errorCount} calls failed. Check console for details.`,
-        duration: 7000,
-      });
-      console.log("Frontend: Bulk call results from backend:", data.results);
-      queryClient.invalidateQueries({ queryKey: ['callLogs'] });
-    },
-    onError: (error: Error) => {
-      toast({ title: "Bulk Call Request Error", description: error.message, variant: "destructive" });
-    }
-  });
+  const handleDataUpload = (data: CarrierData[]) => {
+    setCarrierData(data);
+    setFilteredData(data);
+  };
 
   const handleCall = (phoneNumber: string, mcNumber: string) => {
-    const carrier = carrierData.find(c => c["MC Number"] === mcNumber);
-    const state = carrier ? carrier.State : ''; 
-    makeCallMutation.mutate({ phoneNumber, mcNumber, state });
-  };
-
-  // This function receives an array of objects { phoneNumber: string, mcNumber: string, state: string }
-  const handleBulkCall = (selectedItems: Array<{ phoneNumber: string, mcNumber: string, state: string }>) => {
-    const callRequests: BulkCallRequestItem[] = selectedItems.map(item => ({
-        phone_number: item.phoneNumber,
-        mc_number: item.mcNumber,
-        state: item.state,
-    }));
-
-    // console.log("Frontend: Preparing to send bulk call requests to MainContent handler:", JSON.stringify(callRequests, null, 2)); 
-    // This console log was for debugging the input to this function.
-    // The one that matters for API call is inside the mutation's body if needed.
-
-    if (callRequests.length > 0) {
-        bulkMakeCallMutation.mutate(callRequests);
+    const existingLog = callLogs.find(log => log.phoneNumber === phoneNumber);
+    
+    if (existingLog) {
+      setCallLogs(prev => prev.map(log => 
+        log.phoneNumber === phoneNumber 
+          ? { ...log, callCount: log.callCount + 1, lastCalled: new Date() }
+          : log
+      ));
     } else {
-        toast({
-            title: "No Valid Items",
-            description: "No valid items to process for bulk call after filtering.",
-            variant: "default"
-        });
+      const newLog: CallLog = {
+        id: Date.now().toString(),
+        phoneNumber,
+        carrierName: mcNumber,
+        callCount: 1,
+        lastCalled: new Date(),
+      };
+      setCallLogs(prev => [...prev, newLog]);
     }
-  };
-  
-  const handleUploadSuccess = () => {
-    queryClient.invalidateQueries({ queryKey: ['carriers'] });
   };
 
   const renderContent = () => {
-    if (isLoadingCarriers && activeSection === 'data') return <div className="p-6 text-center">Loading carrier data...</div>;
-    if (isLoadingCallLogs && activeSection === 'call-logs') return <div className="p-6 text-center">Loading call logs...</div>;
-
     switch (activeSection) {
       case 'scraping':
         return (
@@ -230,7 +277,7 @@ export function MainContent({ activeSection }: MainContentProps) {
             <div className="flex-shrink-0 mb-6">
               <h2 className="text-2xl font-bold text-gray-900 mb-2">Data Scraping</h2>
               <p className="text-gray-600">
-                Enter a range of MC Numbers to scrape carrier data. Scraped data will be added to the Carrier Database.
+                Enter a range of MC Numbers to scrape carrier data from the FMCSA database.
               </p>
             </div>
             <div className="flex-1">
@@ -245,11 +292,11 @@ export function MainContent({ activeSection }: MainContentProps) {
             <div className="flex-shrink-0 mb-4">
               <h2 className="text-2xl font-bold text-gray-900 mb-2">Carrier Data Management</h2>
               <p className="text-gray-600 mb-4">
-                Upload CSV files or scrape to populate the carrier database. Filter and call carriers.
+                Upload CSV files containing carrier information or view and filter existing data.
               </p>
             </div>
             <div className="flex-shrink-0 mb-4">
-              <DataSection onUploadSuccess={handleUploadSuccess} />
+              <DataSection onDataUpload={handleDataUpload} />
             </div>
             <div className="flex-shrink-0 mb-4">
               <FilterPanel 
@@ -260,11 +307,7 @@ export function MainContent({ activeSection }: MainContentProps) {
             <div className="flex-1 min-h-0">
               <CarrierTable 
                 data={filteredData} 
-                allCarriers={carrierData}
                 onCall={handleCall}
-                onBulkCall={handleBulkCall}
-                isBulkCalling={bulkMakeCallMutation.isPending}
-                isSingleCalling={makeCallMutation.isPending}
               />
             </div>
           </div>
@@ -280,20 +323,16 @@ export function MainContent({ activeSection }: MainContentProps) {
               </p>
             </div>
             <div className="flex-1 min-h-0">
-              <CallLogsTable
+              <CallLogsTable 
                 logs={callLogs} 
-                allCarriers={carrierData} // Pass all carriers to find state for bulk recalls
-                onRecall={handleCall} // onRecall for single items triggers the makeCall -> logCall chain
-                onBulkRecall={handleBulkCall} // Prop for bulk recall actions
-                isBulkRecalling={bulkMakeCallMutation.isPending}
-                isSingleRecalling={makeCallMutation.isPending}
+                onRecall={handleCall}
               />
             </div>
           </div>
         );
       
       default:
-        return <div className="p-6 text-center">Select a section from the menu.</div>;
+        return <div>Select a section from the menu</div>;
     }
   };
 
@@ -302,7 +341,7 @@ export function MainContent({ activeSection }: MainContentProps) {
       <div className="border-b border-gray-200 bg-white px-6 py-3 flex-shrink-0">
         <div className="flex items-center gap-4">
           <SidebarTrigger className="p-2 hover:bg-gray-100 rounded-md" />
-          <h1 className="text-xl font-bold text-gray-900">Automated Caller.</h1>
+          <h1 className="text-xl font-bold text-gray-900">Carrier Management Dashboard</h1>
         </div>
       </div>
 
