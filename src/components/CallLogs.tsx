@@ -1,29 +1,80 @@
-
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Phone, Clock } from "lucide-react";
-import { CallLog } from "./MainContent";
+import { CallLog, CarrierData, BulkCallRequestItem } from "./MainContent"; // Ensure these are exported
 import { useToast } from "@/hooks/use-toast";
 
-interface CallLogsProps {
+interface CallLogsTableProps {
   logs: CallLog[];
+  allCarriers: CarrierData[]; // To get state for recalls
   onRecall: (phoneNumber: string, carrierName: string) => void;
+  onBulkRecall: (callRequests: BulkCallRequestItem[]) => void;
 }
 
-export function CallLogs({ logs, onRecall }: CallLogsProps) {
+export function CallLogsTable({ logs, allCarriers, onRecall, onBulkRecall }: CallLogsTableProps) {
+  const [selectedLogIds, setSelectedLogIds] = useState<string[]>([]);
   const { toast } = useToast();
 
-  const handleRecall = (phoneNumber: string, carrierName: string) => {
-    onRecall(phoneNumber, carrierName);
-    toast({
-      title: "Recall Initiated",
-      description: `Calling ${phoneNumber} again`,
-    });
+  const handleSelectAll = (checked: boolean | string) => {
+    if (checked === true) {
+      setSelectedLogIds(logs.map(log => log.id));
+    } else {
+      setSelectedLogIds([]);
+    }
+  };
+
+  const handleSelectLog = (logId: string, checked: boolean | string) => {
+    if (checked === true) {
+      setSelectedLogIds(prev => [...prev, logId]);
+    } else {
+      setSelectedLogIds(prev => prev.filter(id => id !== logId));
+    }
+  };
+
+  const handleIndividualRecall = (phoneNumber: string, carrierName: string) => {
+    onRecall(phoneNumber, carrierName); 
+  };
+
+  const handleBulkRecallAction = () => {
+    const logsToRecall = logs.filter(log => selectedLogIds.includes(log.id));
+    
+    if (logsToRecall.length === 0) {
+      toast({
+        title: "Selection Error",
+        description: "No call logs selected for bulk recall.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const recallRequests: BulkCallRequestItem[] = logsToRecall.map(log => {
+        const carrier = allCarriers.find(c => c["MC Number"] === log.carrierName);
+        return {
+            phone_number: log.phoneNumber,
+            mc_number: log.carrierName,
+            state: carrier ? carrier.State : '',
+        };
+    }).filter(req => req.phone_number && req.phone_number.trim() !== '' && req.phone_number !== '0');
+
+    if (recallRequests.length === 0) {
+        toast({
+            title: "No Valid Recalls",
+            description: "None of the selected logs had valid phone numbers or associated carrier data.",
+            variant: "default",
+        });
+        return;
+    }
+
+    onBulkRecall(recallRequests);
+    setSelectedLogIds([]); // Clear selection
   };
 
   const formatTime = (date: Date) => {
-    return date.toLocaleString();
+    if (!(date instanceof Date) || isNaN(date.getTime())) return "Invalid Date";
+    return date.toLocaleString(); 
   };
 
   if (logs.length === 0) {
@@ -31,90 +82,93 @@ export function CallLogs({ logs, onRecall }: CallLogsProps) {
       <Card className="p-8 text-center bg-white">
         <Phone className="w-12 h-12 text-gray-400 mx-auto mb-4" />
         <h3 className="text-lg font-semibold text-gray-900 mb-2">No Call Logs Yet</h3>
-        <p className="text-gray-500">
-          Start making calls from the Carrier Data tab to see your call history here.
-        </p>
+        <p className="text-gray-500">Calls made will appear here.</p>
       </Card>
     );
   }
-
-  const sortedLogs = [...logs].sort((a, b) => b.lastCalled.getTime() - a.lastCalled.getTime());
-
+  
   return (
-    <Card className="bg-white shadow-sm">
-      <div className="p-4 border-b border-gray-200">
-        <h3 className="text-lg font-semibold text-gray-900">
-          Call History ({logs.length} unique numbers)
-        </h3>
+    <Card className="bg-white shadow-sm flex flex-col h-full">
+      <div className="p-4 border-b border-gray-200 flex-shrink-0">
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-semibold text-gray-900">
+            Call History ({logs.length} unique numbers)
+          </h3>
+          {selectedLogIds.length > 0 && (
+            <Button 
+                onClick={handleBulkRecallAction} 
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+                disabled={bulkMakeCallMutation.isPending} // Assuming you'll pass this from MainContent if needed
+            >
+              <Phone className="w-4 h-4 mr-2" />
+              {bulkMakeCallMutation && bulkMakeCallMutation.isPending ? 'Recalling...' : `Recall Selected (${selectedLogIds.length})`}
+            </Button>
+          )}
+        </div>
       </div>
-      
-      <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead className="bg-gray-50 border-b border-gray-200">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Phone Number
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Carrier
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Call Count
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Last Called
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {sortedLogs.map((log) => (
-              <tr key={log.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap font-mono text-sm">
-                  {log.phoneNumber}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <Badge variant="outline" className="font-mono">
-                    {log.carrierName}
-                  </Badge>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <Badge 
-                    variant={log.callCount > 3 ? "destructive" : log.callCount > 1 ? "secondary" : "default"}
-                  >
-                    {log.callCount} {log.callCount === 1 ? 'call' : 'calls'}
-                  </Badge>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  <div className="flex items-center gap-2">
-                    <Clock className="w-4 h-4 text-gray-400" />
-                    {formatTime(log.lastCalled)}
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <Button
-                    size="sm"
-                    onClick={() => handleRecall(log.phoneNumber, log.carrierName)}
-                    className="bg-blue-600 hover:bg-blue-700 text-white"
-                  >
-                    <Phone className="w-4 h-4 mr-1" />
-                    Recall
-                  </Button>
-                </td>
+
+      <div className="flex-1 overflow-hidden">
+        <div className="h-full overflow-auto">
+          <table className="w-full">
+            <thead className="bg-gray-50 border-b border-gray-200 sticky top-0 z-10">
+              <tr>
+                <th className="px-6 py-3 text-left sticky left-0 bg-gray-50 z-20">
+                  <Checkbox
+                    checked={selectedLogIds.length === logs.length && logs.length > 0}
+                    onCheckedChange={handleSelectAll}
+                    disabled={logs.length === 0}
+                  />
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Carrier (MC#)</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Calls</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Called</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky right-0 bg-gray-50 z-20">Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {logs.map((log) => (
+                <tr key={log.id} className="hover:bg-gray-50 group">
+                  <td className="px-6 py-4 whitespace-nowrap sticky left-0 bg-white group-hover:bg-gray-50 z-10">
+                    <Checkbox
+                      checked={selectedLogIds.includes(log.id)}
+                      onCheckedChange={(checked) => handleSelectLog(log.id, checked)}
+                    />
+                  </td>
+                  <td className="px-4 py-4 whitespace-nowrap font-mono text-xs text-gray-900">{log.phoneNumber}</td>
+                  <td className="px-4 py-4 whitespace-nowrap"><Badge variant="outline" className="font-mono text-xs">{log.carrierName}</Badge></td>
+                  <td className="px-4 py-4 whitespace-nowrap">
+                    <Badge className="text-xs" variant={log.callCount > 3 ? "destructive" : log.callCount > 1 ? "secondary" : "default"}>
+                      {log.callCount} {log.callCount === 1 ? 'call' : 'calls'}
+                    </Badge>
+                  </td>
+                  <td className="px-4 py-4 whitespace-nowrap text-xs text-gray-700">
+                     <div className="flex items-center gap-2"><Clock className="w-3 h-3 text-gray-400" />{formatTime(log.lastCalled)}</div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap sticky right-0 bg-white group-hover:bg-gray-50 z-10">
+                    <Button size="sm" onClick={() => handleIndividualRecall(log.phoneNumber, log.carrierName)}
+                      className="bg-blue-500 hover:bg-blue-600 text-white text-xs px-2 py-1"
+                      disabled={makeCallMutation && makeCallMutation.isPending}>
+                      <Phone className="w-3 h-3 mr-1" /> Recall
+                    </Button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
-      
-      <div className="p-4 border-t border-gray-200 bg-gray-50">
+       <div className="p-4 border-t border-gray-200 bg-gray-50 flex-shrink-0">
         <div className="flex items-center justify-between text-sm text-gray-600">
-          <span>Total calls made: {logs.reduce((sum, log) => sum + log.callCount, 0)}</span>
-          <span>Unique numbers called: {logs.length}</span>
+          <span>Total calls recorded: {logs.reduce((sum, logItem) => sum + logItem.callCount, 0)}</span>
+          <span>Unique numbers logged: {logs.length}</span>
         </div>
       </div>
     </Card>
   );
 }
+
+// Accessing mutation state from MainContent (if needed, but not directly possible without context/prop drilling)
+// This is a placeholder to show where you might use it. You'd need to pass `bulkMakeCallMutation.isPending` and `makeCallMutation.isPending` as props.
+const bulkMakeCallMutation = { isPending: false }; // Placeholder
+const makeCallMutation = { isPending: false }; // Placeholder

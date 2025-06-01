@@ -19,7 +19,7 @@ export function AppSidebar({ onSectionChange, activeSection }: AppSidebarProps) 
   const menuItems = [
     {
       id: 'scraping' as const,
-      title: "Scraping",
+      title: "Scrape",
       icon: Wrench,
     },
     {
@@ -42,7 +42,7 @@ export function AppSidebar({ onSectionChange, activeSection }: AppSidebarProps) 
             <Truck className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-gray-900">CarrierConnect</h1>
+            <h1 className="text-xl font-bold text-gray-900">SwiftNRoute</h1>
             <p className="text-sm text-gray-600">Trucking Business Platform</p>
           </div>
         </div>
