@@ -1,3 +1,4 @@
+
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -26,7 +27,6 @@ export function DataSection({ onUploadSuccess }: DataSectionProps) {
         description: "Please upload a CSV file",
         variant: "destructive",
       });
-      // Reset file input
       if(fileInputRef.current) fileInputRef.current.value = "";
       return;
     }
@@ -47,7 +47,7 @@ export function DataSection({ onUploadSuccess }: DataSectionProps) {
         throw new Error(result.message || "Failed to upload CSV");
       }
       
-      onUploadSuccess(); // Trigger refetch in parent
+      onUploadSuccess();
       toast({
         title: "Success",
         description: result.message || `Uploaded ${file.name} successfully.`,
@@ -61,28 +61,25 @@ export function DataSection({ onUploadSuccess }: DataSectionProps) {
       });
     } finally {
       setIsUploading(false);
-      // Reset file input
       if(fileInputRef.current) fileInputRef.current.value = "";
     }
   };
 
   return (
-    <Card className="p-4 space-y-4 bg-white shadow-sm">
-      <div className="space-y-2">
-        <Label className="text-sm font-medium text-gray-700">
-          Upload Carrier CSV File
-        </Label>
-        <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-400 transition-colors">
-          <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-          <p className="text-sm text-gray-600 mb-2">
-            Click to upload carrier data CSV
-          </p>
+    <Card className="p-3 bg-white shadow-sm">
+      <div className="flex items-center gap-4">
+        <div className="flex-shrink-0">
+          <Label className="text-sm font-medium text-gray-700 mb-1 block">
+            Upload CSV
+          </Label>
           <Button 
             variant="outline" 
             onClick={() => fileInputRef.current?.click()}
             disabled={isUploading}
-            className="text-blue-600 border-blue-600 hover:bg-blue-50"
+            className="text-blue-600 border-blue-600 hover:bg-blue-50 h-8 px-3 text-xs"
+            size="sm"
           >
+            <Upload className="w-3 h-3 mr-1" />
             {isUploading ? "Uploading..." : "Choose File"}
           </Button>
           <input
@@ -92,6 +89,11 @@ export function DataSection({ onUploadSuccess }: DataSectionProps) {
             onChange={handleFileUpload}
             className="hidden"
           />
+        </div>
+        <div className="flex-1">
+          <p className="text-xs text-gray-500">
+            Upload carrier data CSV file to populate the database
+          </p>
         </div>
       </div>
     </Card>

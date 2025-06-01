@@ -18,7 +18,7 @@ interface CarrierTableProps {
 
 export function CarrierTable({ 
   data: filteredDisplayData, 
-  allCarriers, // Use allCarriers if a discrepancy between filtered and full data is an issue for state
+  allCarriers,
   onCall, 
   onBulkCall,
   isBulkCalling,
@@ -123,95 +123,94 @@ export function CarrierTable({
   }
 
   return (
-    <Card className="bg-white shadow-sm flex flex-col h-full">
-      <div className="p-4 border-b border-gray-200 flex-shrink-0">
+    <Card className="bg-white shadow-sm h-full flex flex-col">
+      <div className="p-3 border-b border-gray-200 flex-shrink-0">
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-gray-900">
+          <h3 className="text-sm font-semibold text-gray-900">
             Carrier Database ({sortedDisplayData.length} of {allCarriers.length} records)
           </h3>
           {selectedCarriersMC.length > 0 && (
             <Button 
                 onClick={handleBulkCallAction} 
-                className="bg-green-600 hover:bg-green-700 text-white"
+                className="bg-green-600 hover:bg-green-700 text-white h-7 px-2 text-xs"
                 disabled={isBulkCalling}
+                size="sm"
             >
-              <Phone className="w-4 h-4 mr-2" />
+              <Phone className="w-3 h-3 mr-1" />
               {isBulkCalling ? 'Calling...' : `Call Selected (${selectedCarriersMC.length})`}
             </Button>
           )}
         </div>
       </div>
       
-      <div className="flex-1 overflow-hidden">
-        <div className="h-full overflow-auto">
-          <table className="w-full min-w-max">
-            <thead className="bg-gray-50 border-b border-gray-200 sticky top-0 z-10">
-              <tr>
-                <th className="px-6 py-3 text-left sticky left-0 bg-gray-50 z-20">
-                  <Checkbox
-                    checked={selectedCarriersMC.length === sortedDisplayData.length && sortedDisplayData.length > 0}
-                    onCheckedChange={handleSelectAll}
-                    disabled={sortedDisplayData.length === 0}
-                  />
+      <div className="flex-1 overflow-auto">
+        <table className="w-full min-w-max text-xs">
+          <thead className="bg-gray-50 border-b border-gray-200 sticky top-0 z-10">
+            <tr>
+              <th className="px-3 py-2 text-left sticky left-0 bg-gray-50 z-20">
+                <Checkbox
+                  checked={selectedCarriersMC.length === sortedDisplayData.length && sortedDisplayData.length > 0}
+                  onCheckedChange={handleSelectAll}
+                  disabled={sortedDisplayData.length === 0}
+                />
+              </th>
+              {[
+                { key: 'MC Number', label: 'MC Number' }, { key: 'Mailing Address', label: 'Address' },
+                { key: 'State', label: 'State' }, { key: 'Phone', label: 'Phone' },
+                { key: 'Drivers', label: 'Drivers' }, { key: 'Power Units', label: 'P. Units' },
+                { key: 'MC Age', label: 'MC Age' }, { key: 'Email', label: 'Email' },
+                { key: 'Carrier Operation', label: 'Operation' }, { key: 'Straight Trucks', label: 'S. Trucks' },
+                { key: 'Truck Tractors', label: 'Tractors' }, { key: 'Trailers', label: 'Trailers' },
+              ].map(({ key, label }) => (
+                <th key={key} className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                  onClick={() => handleSort(key as keyof CarrierData)}>
+                  <div className="flex items-center">{label}<SortIcon field={key as keyof CarrierData} /></div>
                 </th>
-                {[
-                  { key: 'MC Number', label: 'MC Number' }, { key: 'Mailing Address', label: 'Address' },
-                  { key: 'State', label: 'State' }, { key: 'Phone', label: 'Phone' },
-                  { key: 'Drivers', label: 'Drivers' }, { key: 'Power Units', label: 'P. Units' },
-                  { key: 'MC Age', label: 'MC Age (Yrs)' }, { key: 'Email', label: 'Email' },
-                  { key: 'Carrier Operation', label: 'Operation' }, { key: 'Straight Trucks', label: 'S. Trucks' },
-                  { key: 'Truck Tractors', label: 'Tractors' }, { key: 'Trailers', label: 'Trailers' },
-                ].map(({ key, label }) => (
-                  <th key={key} className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                    onClick={() => handleSort(key as keyof CarrierData)}>
-                    <div className="flex items-center">{label}<SortIcon field={key as keyof CarrierData} /></div>
-                  </th>
-                ))}
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky right-0 bg-gray-50 z-20">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {sortedDisplayData.map((carrier) => (
-                <tr key={carrier["MC Number"]} className="hover:bg-gray-50 group">
-                  <td className="px-6 py-4 whitespace-nowrap sticky left-0 bg-white group-hover:bg-gray-50 z-10">
-                     <Checkbox
-                      checked={selectedCarriersMC.includes(carrier["MC Number"])}
-                      onCheckedChange={(checked) => handleSelectCarrier(carrier["MC Number"], checked as boolean)}
-                    />
-                  </td>
-                  <td className="px-4 py-4 whitespace-nowrap"><Badge variant="outline" className="font-mono text-xs">{carrier['MC Number']}</Badge></td>
-                  <td className="px-4 py-4 text-xs text-gray-700 max-w-xs truncate" title={carrier['Mailing Address']}>{carrier['Mailing Address']}</td>
-                  <td className="px-4 py-4 whitespace-nowrap"><Badge variant="secondary" className="text-xs">{carrier['State']}</Badge></td>
-                  <td className="px-4 py-4 whitespace-nowrap font-mono text-xs">{String(carrier['Phone'])}</td>
-                  <td className="px-4 py-4 whitespace-nowrap text-xs text-gray-700 text-center">{carrier['Drivers']}</td>
-                  <td className="px-4 py-4 whitespace-nowrap text-xs text-gray-700 text-center">{carrier['Power Units']}</td>
-                  <td className="px-4 py-4 whitespace-nowrap text-xs text-gray-700 text-center">{carrier['MC Age']}</td>
-                  <td className="px-4 py-4 text-xs text-gray-700 max-w-[150px] truncate" title={carrier['Email']}>{carrier['Email']}</td>
-                  <td className="px-4 py-4 whitespace-nowrap"><Badge className="text-xs" variant={carrier['Carrier Operation'] === 'Interstate' ? 'default' : 'secondary'}>{carrier['Carrier Operation']}</Badge></td>
-                  <td className="px-4 py-4 whitespace-nowrap text-xs text-gray-700 text-center">{carrier['Straight Trucks']}</td>
-                  <td className="px-4 py-4 whitespace-nowrap text-xs text-gray-700 text-center">{carrier['Truck Tractors']}</td>
-                  <td className="px-4 py-4 whitespace-nowrap text-xs text-gray-700 text-center">{carrier['Trailers']}</td>
-                  <td className="px-6 py-4 whitespace-nowrap sticky right-0 bg-white group-hover:bg-gray-50 z-10">
-                    <div className="flex items-center gap-2">
-                      <Button size="sm" onClick={() => handleIndividualCall(String(carrier['Phone']), carrier['MC Number'])}
-                        className="bg-green-500 hover:bg-green-600 text-white text-xs px-2 py-1"
-                        disabled={!carrier['Phone'] || String(carrier['Phone']).trim() === '' || String(carrier['Phone']) === '0' || isSingleCalling}>
-                        <Phone className="w-3 h-3 mr-1" /> {isSingleCalling ? 'Calling...' : 'Call'}
-                      </Button>
-                      {carrier['Email'] && String(carrier['Email']).trim() !== '' && (
-                        <Button size="sm" variant="outline" onClick={() => window.open(`mailto:${carrier['Email']}`)} className="text-xs px-2 py-1">
-                          <Mail className="w-3 h-3" />
-                        </Button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
               ))}
-            </tbody>
-          </table>
-        </div>
+              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky right-0 bg-gray-50 z-20">
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {sortedDisplayData.map((carrier) => (
+              <tr key={carrier["MC Number"]} className="hover:bg-gray-50 group">
+                <td className="px-3 py-2 whitespace-nowrap sticky left-0 bg-white group-hover:bg-gray-50 z-10">
+                   <Checkbox
+                    checked={selectedCarriersMC.includes(carrier["MC Number"])}
+                    onCheckedChange={(checked) => handleSelectCarrier(carrier["MC Number"], checked as boolean)}
+                  />
+                </td>
+                <td className="px-2 py-2 whitespace-nowrap"><Badge variant="outline" className="font-mono text-xs">{carrier['MC Number']}</Badge></td>
+                <td className="px-2 py-2 text-xs text-gray-700 max-w-xs truncate" title={carrier['Mailing Address']}>{carrier['Mailing Address']}</td>
+                <td className="px-2 py-2 whitespace-nowrap"><Badge variant="secondary" className="text-xs">{carrier['State']}</Badge></td>
+                <td className="px-2 py-2 whitespace-nowrap font-mono text-xs">{String(carrier['Phone'])}</td>
+                <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-700 text-center">{carrier['Drivers']}</td>
+                <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-700 text-center">{carrier['Power Units']}</td>
+                <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-700 text-center">{carrier['MC Age']}</td>
+                <td className="px-2 py-2 text-xs text-gray-700 max-w-[120px] truncate" title={carrier['Email']}>{carrier['Email']}</td>
+                <td className="px-2 py-2 whitespace-nowrap"><Badge className="text-xs" variant={carrier['Carrier Operation'] === 'Interstate' ? 'default' : 'secondary'}>{carrier['Carrier Operation']}</Badge></td>
+                <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-700 text-center">{carrier['Straight Trucks']}</td>
+                <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-700 text-center">{carrier['Truck Tractors']}</td>
+                <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-700 text-center">{carrier['Trailers']}</td>
+                <td className="px-3 py-2 whitespace-nowrap sticky right-0 bg-white group-hover:bg-gray-50 z-10">
+                  <div className="flex items-center gap-1">
+                    <Button size="sm" onClick={() => handleIndividualCall(String(carrier['Phone']), carrier['MC Number'])}
+                      className="bg-green-500 hover:bg-green-600 text-white text-xs px-2 py-1 h-6"
+                      disabled={!carrier['Phone'] || String(carrier['Phone']).trim() === '' || String(carrier['Phone']) === '0' || isSingleCalling}>
+                      <Phone className="w-3 h-3 mr-1" /> {isSingleCalling ? 'Calling...' : 'Call'}
+                    </Button>
+                    {carrier['Email'] && String(carrier['Email']).trim() !== '' && (
+                      <Button size="sm" variant="outline" onClick={() => window.open(`mailto:${carrier['Email']}`)} className="text-xs px-2 py-1 h-6">
+                        <Mail className="w-3 h-3" />
+                      </Button>
+                    )}
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </Card>
   );

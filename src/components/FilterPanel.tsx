@@ -32,12 +32,10 @@ export function FilterPanel({ data, onFilter }: FilterPanelProps) {
   const applyFilters = () => {
     let filtered = data;
 
-    // State filter
     if (selectedStates.length > 0) {
       filtered = filtered.filter(item => selectedStates.includes(item.State));
     }
 
-    // Numeric filters
     const applyNumericFilter = (items: CarrierData[], field: keyof CarrierData, filter: NumericFilter) => {
       if (!filter.value) return items;
       
@@ -99,14 +97,14 @@ export function FilterPanel({ data, onFilter }: FilterPanelProps) {
     filter: NumericFilter; 
     setFilter: (filter: NumericFilter) => void 
   }) => (
-    <div className="space-y-1">
+    <div className="space-y-1 min-w-0">
       <Label className="text-xs font-medium text-gray-700">{label}</Label>
       <div className="flex gap-1">
         <Select 
           value={filter.operator} 
           onValueChange={(value) => setFilter({ ...filter, operator: value })}
         >
-          <SelectTrigger className="w-12 h-8 text-xs">
+          <SelectTrigger className="w-10 h-7 text-xs">
             <SelectValue />
           </SelectTrigger>
           <SelectContent className="bg-white border border-gray-200 shadow-lg z-50">
@@ -122,27 +120,26 @@ export function FilterPanel({ data, onFilter }: FilterPanelProps) {
           placeholder="Value"
           value={filter.value}
           onChange={(e) => setFilter({ ...filter, value: e.target.value })}
-          className="flex-1 h-8 text-xs"
+          className="flex-1 h-7 text-xs min-w-0"
         />
       </div>
     </div>
   );
 
   return (
-    <Card className="p-4 bg-white shadow-sm">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-gray-900">Filter Carriers</h3>
-        <Button variant="outline" onClick={clearFilters} className="text-gray-600 h-8 text-xs">
-          Clear All Filters
+    <Card className="p-3 bg-white shadow-sm">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-sm font-semibold text-gray-900">Filter Carriers</h3>
+        <Button variant="outline" onClick={clearFilters} className="text-gray-600 h-7 text-xs px-2">
+          Clear All
         </Button>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-3">
-        {/* State Filter */}
-        <div className="space-y-1">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-2">
+        <div className="space-y-1 min-w-0">
           <Label className="text-xs font-medium text-gray-700">State</Label>
           <Select onValueChange={addState}>
-            <SelectTrigger className="h-8 text-xs">
+            <SelectTrigger className="h-7 text-xs">
               <SelectValue placeholder="Select..." />
             </SelectTrigger>
             <SelectContent className="bg-white border border-gray-200 shadow-lg z-50">
@@ -168,8 +165,8 @@ export function FilterPanel({ data, onFilter }: FilterPanelProps) {
 
         <NumericFilterInput label="Drivers" filter={driversFilter} setFilter={setDriversFilter} />
         <NumericFilterInput label="MC Age" filter={mcAgeFilter} setFilter={setMcAgeFilter} />
-        <NumericFilterInput label="Power Units" filter={powerUnitsFilter} setFilter={setPowerUnitsFilter} />
-        <NumericFilterInput label="Straight Trucks" filter={straightTrucksFilter} setFilter={setStraightTrucksFilter} />
+        <NumericFilterInput label="P. Units" filter={powerUnitsFilter} setFilter={setPowerUnitsFilter} />
+        <NumericFilterInput label="S. Trucks" filter={straightTrucksFilter} setFilter={setStraightTrucksFilter} />
         <NumericFilterInput label="Tractors" filter={tractorsFilter} setFilter={setTractorsFilter} />
         <NumericFilterInput label="Trailers" filter={trailersFilter} setFilter={setTrailersFilter} />
       </div>

@@ -53,7 +53,6 @@ const fetchData = async (url: string) => {
   return response.json();
 };
 
-
 export function MainContent({ activeSection }: MainContentProps) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -85,7 +84,6 @@ export function MainContent({ activeSection }: MainContentProps) {
       };
     })
     .sort((a, b) => b.lastCalled.getTime() - a.lastCalled.getTime());
-
 
   useEffect(() => {
     if (carrierData) {
@@ -163,7 +161,6 @@ export function MainContent({ activeSection }: MainContentProps) {
         body: JSON.stringify(callRequests),
       });
       const result = await response.json();
-      // Check for non-200 status, but allow if backend signals partial success with a 200
       if (!response.ok && result.status !== "partial_success") { 
         throw new Error(result.message || "Bulk call request failed at network level");
       }
@@ -192,17 +189,12 @@ export function MainContent({ activeSection }: MainContentProps) {
     makeCallMutation.mutate({ phoneNumber, mcNumber, state });
   };
 
-  // This function receives an array of objects { phoneNumber: string, mcNumber: string, state: string }
   const handleBulkCall = (selectedItems: Array<{ phoneNumber: string, mcNumber: string, state: string }>) => {
     const callRequests: BulkCallRequestItem[] = selectedItems.map(item => ({
         phone_number: item.phoneNumber,
         mc_number: item.mcNumber,
         state: item.state,
     }));
-
-    // console.log("Frontend: Preparing to send bulk call requests to MainContent handler:", JSON.stringify(callRequests, null, 2)); 
-    // This console log was for debugging the input to this function.
-    // The one that matters for API call is inside the mutation's body if needed.
 
     if (callRequests.length > 0) {
         bulkMakeCallMutation.mutate(callRequests);
@@ -241,23 +233,23 @@ export function MainContent({ activeSection }: MainContentProps) {
       
       case 'data':
         return (
-          <div className="h-full flex flex-col">
-            <div className="flex-shrink-0 mb-4">
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Carrier Data Management</h2>
-              <p className="text-gray-600 mb-4">
+          <div className="h-full flex flex-col overflow-hidden">
+            <div className="flex-shrink-0 mb-3">
+              <h2 className="text-xl font-bold text-gray-900 mb-1">Carrier Data Management</h2>
+              <p className="text-sm text-gray-600 mb-4">
                 Upload CSV files or scrape to populate the carrier database. Filter and call carriers.
               </p>
             </div>
-            <div className="flex-shrink-0 mb-4">
+            <div className="flex-shrink-0 mb-3">
               <DataSection onUploadSuccess={handleUploadSuccess} />
             </div>
-            <div className="flex-shrink-0 mb-4">
+            <div className="flex-shrink-0 mb-3">
               <FilterPanel 
                 data={carrierData} 
                 onFilter={setFilteredData} 
               />
             </div>
-            <div className="flex-1 min-h-0">
+            <div className="flex-1 min-h-0 overflow-hidden">
               <CarrierTable 
                 data={filteredData} 
                 allCarriers={carrierData}
@@ -272,14 +264,14 @@ export function MainContent({ activeSection }: MainContentProps) {
       
       case 'call-logs':
         return (
-          <div className="h-full flex flex-col">
-            <div className="flex-shrink-0 mb-6">
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Call Management</h2>
-              <p className="text-gray-600">
+          <div className="h-full flex flex-col overflow-hidden">
+            <div className="flex-shrink-0 mb-4">
+              <h2 className="text-xl font-bold text-gray-900 mb-1">Call Management</h2>
+              <p className="text-sm text-gray-600">
                 Track and manage all outbound calls to carriers with recall functionality.
               </p>
             </div>
-            <div className="flex-1 min-h-0">
+            <div className="flex-1 min-h-0 overflow-hidden">
               <CallLogsTable
                 logs={callLogs} 
                 allCarriers={carrierData} // Pass all carriers to find state for bulk recalls
@@ -298,7 +290,7 @@ export function MainContent({ activeSection }: MainContentProps) {
   };
 
   return (
-    <SidebarInset>
+    <SidebarInset className="flex flex-col h-screen overflow-hidden">
       <div className="border-b border-gray-200 bg-white px-6 py-3 flex-shrink-0">
         <div className="flex items-center gap-4">
           <SidebarTrigger className="p-2 hover:bg-gray-100 rounded-md" />
@@ -306,7 +298,7 @@ export function MainContent({ activeSection }: MainContentProps) {
         </div>
       </div>
 
-      <div className="flex-1 p-6 min-h-0">
+      <div className="flex-1 p-4 overflow-hidden">
         {renderContent()}
       </div>
     </SidebarInset>
